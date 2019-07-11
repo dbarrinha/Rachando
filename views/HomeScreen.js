@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import {
   View,
-  FlatList
+  FlatList,
+  PanResponder,
+  Animated
 } from 'react-native';
 import { Divider, Text, Avatar, Button, Card, Title, Paragraph } from 'react-native-paper';
 
@@ -15,12 +17,14 @@ export default class HomeScreen extends Component {
     super(props);
     this.state = {
       listaSuges: [],
-      listaMesa: []
+      listaMesa: [],
     }
+  }
 
-}
+  
 
   _renderSugestoes = (item) => {
+    
     return (
       <View style={{ marginHorizontal: 5, elevation: 0 }}>
         <Card>
@@ -34,7 +38,7 @@ export default class HomeScreen extends Component {
 
   _renderMesa = (item) => {
     return (
-      <View style={{ margin: 10,elevation: 0 }}>
+      <View style={{ margin: 10, elevation: 0 }}>
         <Card>
           <Card.Content>
             <Title>{item.item}</Title>
@@ -49,7 +53,7 @@ export default class HomeScreen extends Component {
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }}>
         <View style={{ backgroundColor: '#f3f0fa', height: 100 }}>
           <FlatList
-            style={{padding: 5}}
+            style={{ padding: 5 }}
             horizontal={true}
             data={["Cerveja", "Suco", "Filé com fritas", "+"]}
             renderItem={item => this._renderSugestoes(item)}
@@ -57,12 +61,12 @@ export default class HomeScreen extends Component {
         </View>
         <Divider />
         <FlatList
-            style={{paddingTop: 10}}
-            data={["Cerveja", "Suco", "Filé com fritas"]}
-            renderItem={item => this._renderMesa(item)}
-          />
-        
+          style={{ paddingTop: 10 }}
+          data={["Cerveja", "Suco", "Filé com fritas"]}
+          renderItem={item => this._renderMesa(item)}
+        />
       </View>
     );
   }
 }
+
