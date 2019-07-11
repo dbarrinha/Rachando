@@ -3,8 +3,9 @@ import {
   View,
   StyleSheet,
   PanResponder,
-  Animated
+  Animated,
 } from 'react-native';
+import { Divider, Text, Avatar, Button, Card, Title, Paragraph } from 'react-native-paper';
 
 export default class UsersScreen extends Component {
 
@@ -22,12 +23,14 @@ export default class UsersScreen extends Component {
   }
 
   componentWillMount() {
-    // Add a listener for the delta value change
     this._val = { x: 0, y: 0 }
     this.state.pan.addListener((value) => this._val = value);
     // Initialize PanResponder with move handling
     this.panResponder = PanResponder.create({
-      onStartShouldSetPanResponder: (e, gesture) => true,
+      onStartShouldSetPanResponder: (e, gesture) => {
+        console.log("teste")
+        return true;
+      },
       onPanResponderMove: Animated.event([
         null, { dx: this.state.pan.x, dy: this.state.pan.y }
       ]),
@@ -50,18 +53,23 @@ export default class UsersScreen extends Component {
         <Animated.View
           {...this.panResponder.panHandlers}
           style={[panStyle, styles.circle]}
-        />
+        >
+          <Card>
+            <Card.Content>
+              <Title>Teste</Title>
+            </Card.Content>
+          </Card>
+        </Animated.View>
       </View>
     );
   }
 }
 
-let CIRCLE_RADIUS = 30;
+let CIRCLE_RADIUS = 50;
 let styles = StyleSheet.create({
   circle: {
     backgroundColor: "skyblue",
     width: CIRCLE_RADIUS * 2,
-    height: CIRCLE_RADIUS * 2,
-    borderRadius: CIRCLE_RADIUS
+    height: CIRCLE_RADIUS,
   }
 });
