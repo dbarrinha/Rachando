@@ -4,58 +4,107 @@ import {
   TouchableWithoutFeedback,
   Animated,
   Easing,
+  PanResponder,
   View,
   Text
 } from "react-native";
 import { Card } from 'react-native-paper';
 const { height, width } = Dimensions.get('window');
-const CardHeader = ({
-  item,
-  cardAction
-}) => {
-  let scaleValue = new Animated.Value(0);
 
-  const cardScale = scaleValue.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [1, 1.1, 1.2]
-  });
+export default class CardHeader extends Component {
+  constructor(props) {
+    super(props)
 
-  let transformStyle = { ...styles.card, transform: [{ scale: cardScale }] };
+    this.pan = new Animated.ValueXY(); // for animating the card's X and Y position
+    this.scaleValue = new Animated.Value(0); // for scaling the card while the user drags it
+    this.opacityValue = new Animated.Value(2);
 
-  return (
-    <TouchableWithoutFeedback
-      
-      onLongPress={() => {
-        scaleValue.setValue(0);
-        Animated.timing(scaleValue, {
-          toValue: 1,
-          duration: 250,
-          easing: Easing.linear,
-          useNativeDriver: true
-        }).start();
-        cardAction();
-      }}
+    this.cardScale = this.scaleValue.interpolate({
+      inputRange: [0, 0.5, 1], // animate to 0.5 while user is dragging, then to 1 or 0 once they let go
+      outputRange: [1, 0.5, 1]
+    });
 
-      onPressOut={() => {
-        Animated.timing(scaleValue, {
-          toValue: 0,
-          duration: 100,
-          easing: Easing.linear,
-          useNativeDriver: true
-        }).start();
-      }}>
+    this.cardOpacity = this.opacityValue.interpolate({
+      inputRange: [0, 1, 2], // default value is 2, so we'll animate backwards
+      outputRange: [0, 0.5, 1]
+    });
+  }
 
-      <Animated.View style={transformStyle}>
-        <View style={{ width: width * 0.45, height: height * 0.15 }}>
-          <Card.Content style={{ justifyContent: 'flex-start' }}>
-            <Text style={{ fontSize: 25}}>{item.item}</Text>
-            <Text>Nova Opção</Text>
-          </Card.Content>
-        </View>
+  componentWillMount = () => {
+    // add the following:
+    this.panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (e, gestureState) => {
+
+      },
+      onPanResponderMove: (e, gesture) => {
+        Animated.parallel([
+
+          Animated.timing(this.opacityValue, {
+            toValue: 2,
+            duration: 250,
+            easing: Easing.linear,
+            useNativeDriver: true
+          }),
+          Animated.spring(this.pan, {
+            toValue: { x: 0, y: 0 },
+            friction: 5,
+            useNativeDriver: true
+          })
+        ]).start();
+        Animated.event([null, { dx: this.pan.x, dy: this.pan.y }])(e, gesture);
+        /*if (isDropArea(gesture)) {
+          targetDropArea(true);
+        } else {
+          targetDropArea(false);
+        }*/
+      },
+      onPanResponderRelease: (e, gesture) => {
+        Animated.parallel([
+
+          Animated.timing(this.opacityValue, {
+            toValue: 2,
+            duration: 250,
+            easing: Easing.linear,
+            useNativeDriver: true
+          }),
+          Animated.spring(this.pan, {
+            toValue: { x: 0, y: 0 },
+            friction: 5,
+            useNativeDriver: true
+          })
+        ]).start();
+      }
+    });
+  }
+  render() {
+    const {
+      item,
+      cardAction
+    } = this.props;
+
+    let [translateX, translateY] = [this.pan.x, this.pan.y];
+
+    let transformStyle = {
+      ...styles.card,
+      //opacity: item.isVisible ? this.cardOpacity : 0,
+      opacity: this.cardOpacity,
+      transform: [{ translateX }, { translateY }, { scale: this.cardScale }]
+    };
+
+    return (
+      <Animated.View style={transformStyle} {...this.panResponder.panHandlers}>
+          <View style={{ width: width * 0.45, height: height * 0.15 }}>
+            <Card.Content style={{ justifyContent: 'flex-start' }}>
+              <Text style={{ fontSize: 25 }}>teste</Text>
+              <Text>Nova Opção</Text>
+            </Card.Content>
+          </View>
       </Animated.View>
-    </TouchableWithoutFeedback>
-  );
-};
+    );
+  }
+}
 
 const styles = {
   card: {
@@ -66,5 +115,3 @@ const styles = {
     borderRadius: 4
   }
 };
-
-export default CardHeader;
