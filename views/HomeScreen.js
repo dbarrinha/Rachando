@@ -3,10 +3,10 @@ import {
   View,
   FlatList,
   Dimensions,
-  Animated
 } from 'react-native';
 import { Divider, Text, Avatar, Button, Card, Title, Paragraph } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
+import CardHeader from '../components/CardHeader'
 
 const { height, width } = Dimensions.get('window');
 
@@ -27,22 +27,12 @@ export default class HomeScreen extends Component {
 
 
   _renderSugestoes = (item) => {
-
-    return (
-      <View style={{ marginHorizontal: 5, elevation: 0 }}>
-        <Card style={{ width: width * 0.45, height: height * 0.15 }}>
-          <Card.Title
-            title={item.item}
-            subtitle="Card Subtitle"
-          />
-        </Card>
-      </View>
-    );
+    return (<CardHeader item={item} cardAction={()=>{}} />)
   }
 
   _renderMesa = (item) => {
     return (
-      <View style={{ margin: 10, elevation: 0 }}>
+      <View style={{ margin: 10, elevation: '10' }}>
         <Card>
           <Card.Title
             style={{ fontFamily: 'LibelSuitRg-Regular' }}
@@ -61,18 +51,17 @@ export default class HomeScreen extends Component {
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             <FlatList
               showsHorizontalScrollIndicator={false}
-              style={{ margin: 5 }}
               horizontal={true}
-              data={["Cerveja", "Suco", "Filé com fritas"]}
+              data={["Teste1", "Teste2", "Teste3"]}
               renderItem={item => this._renderSugestoes(item)}
             ></FlatList>
-            <View style={{ marginRight: 5, marginTop: 5, elevation: 0 }}>
-              <Card style={{ width: width * 0.35, height: height * 0.15 }}>
+            <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 6, backgroundColor:'white' , borderRadius: 4 }}>
+              <View style={{ width: width * 0.35, height: height * 0.15 }}>
                 <Card.Content style={{ alignItems: 'center' }}>
-                  <Text style={{fontSize: 40}}>+</Text>
-                  <Text style={{ fontFamily: 'LibelSuitRg-Regular' }}>Nova Opção</Text>
+                  <Text style={{ fontSize: 40, fontFamily: 'LibelSuitRg-Regular' }}>+</Text>
+                  <Text>Nova Opção</Text>
                 </Card.Content>
-              </Card>
+              </View>
             </View>
           </ScrollView>
         </View>
