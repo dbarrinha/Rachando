@@ -3,8 +3,9 @@ import {
   View,
   FlatList,
   Dimensions,
+  Text
 } from 'react-native';
-import { Divider, Text, Avatar, Button, Card, Title, Paragraph } from 'react-native-paper';
+import { Divider, Avatar, Button, Card, Title, Paragraph } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
 import CardHeader from '../components/CardHeader'
 
@@ -32,7 +33,7 @@ export default class HomeScreen extends Component {
 
   _renderMesa = (item) => {
     return (
-      <View style={{ margin: 10, elevation: '10' }}>
+      <View style={{ margin: 10, elevation: 10 }}>
         <Card>
           <Card.Title
             style={{ fontFamily: 'LibelSuitRg-Regular' }}
@@ -40,6 +41,14 @@ export default class HomeScreen extends Component {
             subtitle="Card Subtitle"
           />
         </Card>
+      </View>
+    );
+  }
+
+  _renderMesaVazia = () => {
+    return (
+      <View style={{ marginTop: width* 0.5, elevation: 10, alignItems: 'center' }}>
+        <Text>Mesa Vazia!</Text>
       </View>
     );
   }
@@ -58,7 +67,7 @@ export default class HomeScreen extends Component {
             <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 6, backgroundColor:'white' , borderRadius: 4 }}>
               <View style={{ width: width * 0.35, height: height * 0.15 }}>
                 <Card.Content style={{ alignItems: 'center' }}>
-                  <Text style={{ fontSize: 40, fontFamily: 'LibelSuitRg-Regular' }}>+</Text>
+                  <Text style={{ fontSize: 40, fontFamily: 'LibelSuitRg-Regular', color: '#383838' }}>+</Text>
                   <Text>Nova Opção</Text>
                 </Card.Content>
               </View>
@@ -66,10 +75,12 @@ export default class HomeScreen extends Component {
           </ScrollView>
         </View>
         <Divider />
+        <Text style={{marginHorizontal: 10, color:'#474747'}}>Itens da mesa</Text>
         <FlatList
-          style={{ paddingTop: 10 }}
+          style={{ margin: 10 }}
           data={this.state.listaMesa}
           renderItem={item => this._renderMesa(item)}
+          ListEmptyComponent={this._renderMesaVazia()}
         />
       </View>
     );
