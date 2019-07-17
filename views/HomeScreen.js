@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Platform
 } from 'react-native';
-import { Divider, Card, TextInput, TouchableRipple } from 'react-native-paper';
+import { Divider, Card, TextInput, TouchableRipple, Chip } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
 //import CardHeader from '../components/CardHeader'
 import Icon from 'react-native-vector-icons/Ionicons'
@@ -26,7 +26,7 @@ export default class HomeScreen extends Component {
     super(props);
     this.state = {
       listaSuges: ["Teste1", "Teste2", "Teste3"],
-      listaMesa: ["0000000"],
+      listaMesa: ["Cerveja"],
       itemAux: '',
       visible: false,
       nome: '',
@@ -53,15 +53,25 @@ export default class HomeScreen extends Component {
     return (
       <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 5, backgroundColor: 'white', borderRadius: 4 }}>
         <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ alignItems: 'flex-start' , margin: 10}}>
+          <View style={{ alignItems: 'flex-start', margin: 10 }}>
             <Text style={{ fontSize: 25 }}>{item.item}</Text>
-            <Text style={{ color: '#474747' }}>R$ 99,99</Text>
-            <Text style={{ color: '#474747' }}>Quant.: 13</Text>
+            <Text style={{ color: '#474747' }}>R$ 99.99</Text>
+            <Text style={{ color: '#474747' }}>Quant.: 10</Text>
           </View>
-          <TouchableRipple onPress={()=> console.log("teste")} style={{ justifyContent: 'center', alignItems:'center', flexDirection: 'column', width: width * 0.2 ,borderRadius: width * 0.2 }}>
+          <TouchableRipple onPress={() => console.log("teste")} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2, borderRadius: width * 0.2 }}>
             <Icon style={{ fontSize: 40 }} name={Platform.OS === 'ios' ? "ios-add" : "md-add"} />
           </TouchableRipple>
         </Card.Content>
+        <Divider />
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent:'flex-start' }}>
+          <Chip style={{margin: 5}}><Text style={{fontSize:12}}>Danilo barrinha</Text></Chip>
+          <Chip style={{margin: 5}}><Text style={{fontSize:12}}>Giberson</Text></Chip>
+          <Chip style={{margin: 5}}><Text style={{fontSize:12}}>Renato</Text></Chip>
+          <Chip style={{margin: 5}}><Text style={{fontSize:12}}>Fulano</Text></Chip>
+          <Chip style={{margin: 5}}><Text style={{fontSize:12}}>Cicrano</Text></Chip>
+          <Chip style={{margin: 5}}><Text style={{fontSize:12}}>Beltrano</Text></Chip>
+        </View>
+
       </View>
     );
   }
