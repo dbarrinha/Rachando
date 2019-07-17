@@ -3,12 +3,17 @@ import {
   View,
   FlatList,
   Dimensions,
-  Text
+  Text,
+  StyleSheet,
+  Platform
 } from 'react-native';
-import { Divider, Avatar, Button, Card, Title, Paragraph, TouchableRipple } from 'react-native-paper';
+import { Divider, Card, TextInput, TouchableRipple } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
-import CardHeader from '../components/CardHeader'
-
+//import CardHeader from '../components/CardHeader'
+import Icon from 'react-native-vector-icons/Ionicons'
+import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
+import TextInputMask from 'react-native-text-input-mask';
+import Slider from 'react-native-simple-slider'
 const { height, width } = Dimensions.get('window');
 
 export default class HomeScreen extends Component {
@@ -21,18 +26,21 @@ export default class HomeScreen extends Component {
     super(props);
     this.state = {
       listaSuges: ["Teste1", "Teste2", "Teste3"],
-      listaMesa: [],
+      listaMesa: ["0000000"],
+      itemAux: '',
+      visible: false,
+      nome: '',
+      preco: ''
     }
   }
+
 
   _renderSugestoes = (item) => {
     //return (<CardHeader item={item} cardAction={()=>{}} />)
     return (
-
-
       <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
-        <TouchableRipple onPress={() => this.addItemMesa(item.item)} style={{ width: width * 0.45, height: height * 0.15 }} >
-          <Card.Content style={{ justifyContent: 'flex-start' }}>
+        <TouchableRipple onPress={() => this.setState({ visible: true })} style={{ width: width * 0.45, height: height * 0.15 }} >
+          <Card.Content style={{ justifyContent: 'flex-start', margin: 10 }}>
             <Text style={{ fontSize: 25 }}>{item.item}</Text>
             <Text>Nova Opção</Text>
           </Card.Content>
@@ -43,10 +51,16 @@ export default class HomeScreen extends Component {
 
   _renderMesa = (item) => {
     return (
-      <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 1, backgroundColor: 'white', borderRadius: 4 }}>
-        <Card.Content style={{ justifyContent: 'flex-start', padding: 15 }}>
-          <Text style={{ fontSize: 25 }}>{item.item}</Text>
-          <Text>Nova Opção</Text>
+      <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 5, backgroundColor: 'white', borderRadius: 4 }}>
+        <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ alignItems: 'flex-start' , margin: 10}}>
+            <Text style={{ fontSize: 25 }}>{item.item}</Text>
+            <Text style={{ color: '#474747' }}>R$ 99,99</Text>
+            <Text style={{ color: '#474747' }}>Quant.: 13</Text>
+          </View>
+          <TouchableRipple onPress={()=> console.log("teste")} style={{ justifyContent: 'center', alignItems:'center', flexDirection: 'column', width: width * 0.2 ,borderRadius: width * 0.2 }}>
+            <Icon style={{ fontSize: 40 }} name={Platform.OS === 'ios' ? "ios-add" : "md-add"} />
+          </TouchableRipple>
         </Card.Content>
       </View>
     );
@@ -63,7 +77,20 @@ export default class HomeScreen extends Component {
   addItemMesa = (item) => {
     let lista = this.state.listaMesa
     lista.push(item)
-    this.setState({ listaMesa: lista })
+    this.setState({
+      listaMesa: lista,
+      visible: false,
+      nome: "",
+      preco: 0
+    })
+  }
+
+  clearDilaog = () => {
+    this.setState({
+      visible: false,
+      nome: "",
+      preco: 0
+    })
   }
 
   render() {
@@ -90,15 +117,74 @@ export default class HomeScreen extends Component {
             </View>
           </ScrollView>
         </View>
-          <Divider />
-          <Text style={{ marginHorizontal: 10, color: '#474747' }}>Itens</Text>
-          <FlatList
-            data={this.state.listaMesa}
-            renderItem={item => this._renderMesa(item)}
-            ListEmptyComponent={this._renderMesaVazia()}
-          />
+        <Divider />
+        <Text style={{ marginHorizontal: 10, color: '#474747' }}>Itens</Text>
+        <FlatList
+          data={this.state.listaMesa}
+          renderItem={item => this._renderMesa(item)}
+          ListEmptyComponent={this._renderMesaVazia()}
+        />
+        <Dialog
+          visible={this.state.visible}
+          width={0.9}
+          height={0.4}
+          onHardwareBackPress={() => { this.setState({ visible: false }) }}
+          dialogAnimation={new ScaleAnimation()}>
+          <DialogContent style={{ flex: 1, justifyContent: 'space-around' }}>
+            <Text style={{ marginHorizontal: 10, fontSize: 25 }} ></Text>
+            <TextInput
+              style={styles.input}
+              label='Nome'
+              selectionColor='#f3f0fa'
+              underlineColor='#f3f0fa'
+              value={this.state.nome}
+              onChangeText={text => this.setState({ nome: text })}
+            />
+            <TextInput
+              style={styles.input}
+              label='Preço'
+              selectionColor='#f3f0fa'
+              underlineColor='#f3f0fa'
+              value={this.state.preco + ""}
+              render={props =>
+                <TextInputMask
+                  {...props}
+                  onChangeText={(formatted, extracted) => {
+                    console.log(formatted)
+                    console.log(extracted)
+                    this.setState({ preco: +extracted })
+                  }}
+                  mask="$[999990].[99]"
+                />
+              }
+            />
+            <Slider
+              sliderWidth={width * 0.8}
+              value={+this.state.preco}
+              onValueChange={preco => this.setState({ preco: +preco })}
+              disabledHoverEffect={false}
+              step={0.5}
+              maximumValue={100}
+            />
+          </DialogContent>
+          <DialogFooter>
+            <DialogButton
+              text={<Icon size={20} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
+              onPress={() => { this.setState({ visible: false }) }}
+            />
+            <DialogButton
+              text={<Icon size={20} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
+              onPress={() => { this.addItemMesa(this.state.nome) }}
+            />
+          </DialogFooter>
+        </Dialog>
       </View>
     );
   }
 }
 
+const styles = StyleSheet.create({
+  input: {
+    backgroundColor: 'white'
+  },
+}); 
