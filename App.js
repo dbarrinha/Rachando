@@ -7,9 +7,12 @@ import {
 import { createMaterialBottomTabNavigator } from "react-navigation-material-bottom-tabs";
 import { View, ActivityIndicator, StatusBar,StyleSheet} from 'react-native'
 import Icon from 'react-native-vector-icons/Ionicons'
+
 ///VIEWS
 import home from './views/HomeScreen'
 import users from './views/UsersScreen'
+///DB
+import {initDB} from './dao/InitDB'
 
 
 class AuthLoadingScreen extends React.Component {
@@ -19,6 +22,7 @@ class AuthLoadingScreen extends React.Component {
   }
 
   _bootstrapAsync = async () => {
+      initDB()
       this.props.navigation.navigate('App');
   };
 

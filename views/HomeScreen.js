@@ -14,8 +14,12 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
 import TextInputMask from 'react-native-text-input-mask';
 import Slider from 'react-native-simple-slider'
-const { height, width } = Dimensions.get('window');
 
+//DB
+import { db } from '../dao/database'
+import User from '../dao/Users'
+
+const { height, width } = Dimensions.get('window');
 export default class HomeScreen extends Component {
 
   static navigationOptions = {
@@ -33,6 +37,63 @@ export default class HomeScreen extends Component {
       nome: '',
       preco: 0
     }
+  }
+
+  componentDidMount = () => {
+    /*db.transaction(function (tx) {
+      tx.executeSql(
+        'INSERT INTO teste (nome) VALUES (?)',
+        ["testandooo"],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) {
+            console.warn("teste salvo")
+          } else {
+            console.warn('Registration Failed');
+          }
+        }
+      );
+    });*/
+
+
+    /*db.transaction(tx => {
+      tx.executeSql('SELECT * FROM teste', [], (tx, results) => {
+        var temp = [];
+        for (let i = 0; i < results.rows.length; ++i) {
+          //temp.push(results.rows.item(i));
+          console.log(results.rows.item(i))
+        }
+      });
+    });*/
+
+    /*db.transaction((tx) => {
+      tx.executeSql(
+        'UPDATE teste set nome=? where id=?',
+        ["teste update", 1],
+        (tx, results) => {
+          console.log('Results', results.rowsAffected);
+          if (results.rowsAffected > 0) {
+            console.warn("teste salvo")
+          } else {
+            console.warn('Registration Failed');
+          }
+        }
+      );
+    });*/
+
+    /*db.transaction(tx => {
+      tx.executeSql(
+        'DELETE FROM  teste where id=?',
+        [2],
+        (tx, results) => {
+          if (results.rowsAffected > 0) {
+            console.warn('teste deletado');
+          } else {
+            console.warn('delete Failed');
+          }
+        }
+      );
+    });*/
   }
 
 
@@ -74,7 +135,6 @@ export default class HomeScreen extends Component {
           <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>Cicrano</Text></Chip>
           <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>Beltrano</Text></Chip>
         </View>
-
       </View>
     );
   }
@@ -121,12 +181,12 @@ export default class HomeScreen extends Component {
               renderItem={item => this._renderSugestoes(item)}
             ></FlatList>
             <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
-              <View style={{ width: width * 0.35, height: height * 0.15 }}>
+              <TouchableRipple onPress={() => this.setState({ visible: true })} style={{ width: width * 0.35, height: height * 0.15 }} >
                 <Card.Content style={{ alignItems: 'center' }}>
                   <Text style={{ fontSize: 40, fontFamily: 'LibelSuitRg-Regular', color: '#383838' }}>+</Text>
                   <Text>Nova Opção</Text>
                 </Card.Content>
-              </View>
+              </TouchableRipple>
             </View>
           </ScrollView>
         </View>
@@ -182,11 +242,11 @@ export default class HomeScreen extends Component {
           </DialogContent>
           <DialogFooter>
             <DialogButton
-              text={<Icon size={20} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
               onPress={() => { this.setState({ visible: false }) }}
             />
             <DialogButton
-              text={<Icon size={20} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
+              text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => { this.addItemMesa(this.state.nome) }}
             />
           </DialogFooter>
