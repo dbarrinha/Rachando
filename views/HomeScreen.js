@@ -5,7 +5,8 @@ import {
   Dimensions,
   Text,
   StyleSheet,
-  Platform
+  Platform,
+  ImageBackground
 } from 'react-native';
 import { Divider, Card, TextInput, TouchableRipple, Chip } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -172,14 +173,13 @@ export default class HomeScreen extends Component {
         <View >
           <ScrollView style={{ backgroundColor: '#f3f0fa', height: height * 0.19, flexDirection: 'row' }}
             horizontal={true}
-            showsHorizontalScrollIndicator={false}
-          >
+            showsHorizontalScrollIndicator={false}>
             <FlatList
               showsHorizontalScrollIndicator={false}
               horizontal={true}
               data={["Teste1", "Teste2", "Teste3"]}
-              renderItem={item => this._renderSugestoes(item)}
-            ></FlatList>
+              renderItem={item => this._renderSugestoes(item)}>
+            </FlatList>
             <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
               <TouchableRipple onPress={() => this.setState({ visible: true })} style={{ width: width * 0.35, height: height * 0.15 }} >
                 <Card.Content style={{ alignItems: 'center' }}>
@@ -190,7 +190,9 @@ export default class HomeScreen extends Component {
             </View>
           </ScrollView>
         </View>
+        
         <Divider />
+
         <Text style={{ marginHorizontal: 10, color: '#474747' }}>Itens</Text>
         <FlatList
           data={this.state.listaMesa}

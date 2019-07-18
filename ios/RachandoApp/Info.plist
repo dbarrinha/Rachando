@@ -25,6 +25,12 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
+	<key>NSCameraUsageDescription</key>
+	<string>Libera a camera ai bb</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+    <string>Libera a Galeria ai bb</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Libera o Micro ai bb</string>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
