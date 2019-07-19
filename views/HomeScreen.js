@@ -8,7 +8,7 @@ import {
   Platform,
   PermissionsAndroid
 } from 'react-native';
-import { Divider, Card, TextInput, TouchableRipple, Chip } from 'react-native-paper';
+import { Divider, Card, TextInput, TouchableRipple, Chip, Button } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
 //import CardHeader from '../components/CardHeader'
 import Icon from 'react-native-vector-icons/Ionicons'
@@ -115,7 +115,7 @@ export default class HomeScreen extends Component {
 
   _renderMesa = (item) => {
     return (
-      <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 5, backgroundColor: 'white', borderRadius: 4 }}>
+      <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 6, backgroundColor: 'white', borderRadius: 8 }}>
         <TouchableRipple onPress={() => console.log("detalhes")}>
           <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ alignItems: 'flex-start', margin: 10 }}>
@@ -123,9 +123,9 @@ export default class HomeScreen extends Component {
               <Text style={{ color: '#474747' }}>0000</Text>
               <Text style={{ color: '#474747' }}>0000</Text>
             </View>
-            <TouchableRipple onPress={() => console.log("teste")} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2, borderRadius: width * 0.2 }}>
-              <Icon style={{ fontSize: 40 }} name={Platform.OS === 'ios' ? "ios-add" : "md-add"} />
-            </TouchableRipple>
+            <Button onPress={() => console.log("teste")} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2 }}>
+              <Icon style={{ fontSize: 40 }} color="#000000" name={Platform.OS === 'ios' ? "ios-add" : "md-add"} />
+            </Button>
           </Card.Content>
         </TouchableRipple>
         <Divider />
@@ -249,7 +249,7 @@ export default class HomeScreen extends Component {
               onPress={() => { this.setState({ visible: false }) }}
             />
             <DialogButton
-              text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => { this.addItemMesa(this.state.nome) }}
             />
           </DialogFooter>
