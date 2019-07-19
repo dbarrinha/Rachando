@@ -6,13 +6,14 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "dev": "react-native run-android"
+    "dev": "cls && react-native run-android"
   },
   "dependencies": {
     "jetifier": "^1.6.3",
     "react": "16.8.6",
     "react-native": "0.60.0",
     "react-native-camera": "git+https://git@github.com/react-native-community/react-native-camera.git",
+    "react-native-fs": "^2.13.2",
     "react-native-gesture-handler": "^1.3.0",
     "react-native-paper": "^2.16.0",
     "react-native-popup-dialog": "^0.18.3",

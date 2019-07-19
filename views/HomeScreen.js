@@ -6,7 +6,7 @@ import {
   Text,
   StyleSheet,
   Platform,
-  ImageBackground
+  PermissionsAndroid
 } from 'react-native';
 import { Divider, Card, TextInput, TouchableRipple, Chip } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -40,7 +40,7 @@ export default class HomeScreen extends Component {
     }
   }
 
-  componentDidMount = () => {
+  componentDidMount = async () => {
     /*db.transaction(function (tx) {
       tx.executeSql(
         'INSERT INTO teste (nome) VALUES (?)',
@@ -95,6 +95,7 @@ export default class HomeScreen extends Component {
         }
       );
     });*/
+    
   }
 
 
@@ -190,7 +191,7 @@ export default class HomeScreen extends Component {
             </View>
           </ScrollView>
         </View>
-        
+
         <Divider />
 
         <Text style={{ marginHorizontal: 10, color: '#474747' }}>Itens</Text>

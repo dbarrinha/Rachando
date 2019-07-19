@@ -3,8 +3,9 @@ import { StyleSheet, TouchableOpacity, Text, ImageBackground, ScrollView, View, 
 import { RNCamera } from "react-native-camera";
 import Icon from "react-native-vector-icons/FontAwesome";
 
-export default Camera = () => {
+export default Camera = ( props ) => {
     const [imageUri, setImageUri] = useState(null);
+    
     takePicture = async () => {
         try {
             if (this.camera) {
@@ -26,11 +27,13 @@ export default Camera = () => {
         try {
             const granted = await PermissionsAndroid.requestMultiple(
                 [PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-                 PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE]
+                PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE]
             )
-            if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log(granted["android.permission.WRITE_EXTERNAL_STORAGE"])
+            if (granted["android.permission.WRITE_EXTERNAL_STORAGE"] == "granted") {
                 console.log("Foto salva.");
                 await CameraRoll.saveToCameraRoll(imageUri);
+                props.close()
             } else {
                 console.log("Permissao de camera negada.");
             }
@@ -42,6 +45,7 @@ export default Camera = () => {
     }
 
     return (
+        
         imageUri ?
             <ImageBackground style={styles.preview} source={{ uri: imageUri }}>
                 <ScrollView></ScrollView>
@@ -54,11 +58,8 @@ export default Camera = () => {
             <RNCamera
                 ref={camera => { this.camera = camera; }}
                 style={styles.camera}
-                type={RNCamera.Constants.Type.front}
                 autoFocus={RNCamera.Constants.AutoFocus.on}
                 flashMode={RNCamera.Constants.FlashMode.off}
-                permissionDialogTitle={"Permission to use camera"}
-                permissionDialogMessage={"We need your permission to use your camera phone"}
             >
                 <TouchableOpacity onPress={takePicture} style={styles.capture}>
                     <Text>PICTURE</Text>
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     buttonsPreview: {
         flexDirection: "row",
         justifyContent: "space-around",
-        padding: 5
+        padding: 30
     },
     capture: {
         flex: 0,
@@ -93,5 +94,5 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         alignSelf: 'center',
         margin: 20,
-      },
+    },
 });
