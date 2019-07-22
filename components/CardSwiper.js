@@ -75,6 +75,7 @@ export default class CardSwiper extends React.Component {
 
                 <Animated.ScrollView
                   horizontal
+                  ref={(c) => {this.scroll = c}} 
                   style={styles.scrollContainer}
                   contentContainerStyle={styles.contentContainer}
                   showsHorizontalScrollIndicator={false}
@@ -86,13 +87,13 @@ export default class CardSwiper extends React.Component {
                     {/* This is our main title card */}
                     <View style={[styles.card, {marginRight: 0}]}>
                         
-                        <Text onPress={()=> this.scroll.scrollToEnd()} style={styles.text}>inicial</Text>
+                        <Text onPress={() => this.scroll.getNode().scrollTo({x:  CARD_WIDTH, y: 0, animated: true})} style={styles.text}>inicial</Text>
                         
                     </View>
 
                     {/* And this is our one and only comment */}
                     <Animated.View style={[styles.card, { backgroundColor: 'red'}]}>
-                        <Text style={styles.text}>comentario</Text>
+                        <Text onPress={() => this.scroll.getNode().scrollTo({x: -1 * CARD_WIDTH, y: 0, animated: true})} style={styles.text}>comentario</Text>
                     </Animated.View>
 
                 </Animated.ScrollView>

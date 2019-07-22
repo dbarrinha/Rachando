@@ -8,17 +8,15 @@ import {
   Platform,
   PermissionsAndroid
 } from 'react-native';
-import { Divider, Card, TextInput, TouchableRipple, Chip, Button } from 'react-native-paper';
+import { Divider, Card, TextInput, TouchableRipple, Chip, Button, Title } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
-//import CardHeader from '../components/CardHeader'
 import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
 import TextInputMask from 'react-native-text-input-mask';
 import Slider from 'react-native-simple-slider'
 
 //DB
-import { db } from '../dao/database'
-import User from '../dao/Users'
+import Users from '../dao/Users'
 
 const { height, width } = Dimensions.get('window');
 export default class HomeScreen extends Component {
@@ -40,63 +38,7 @@ export default class HomeScreen extends Component {
     }
   }
 
-  componentDidMount = async () => {
-    /*db.transaction(function (tx) {
-      tx.executeSql(
-        'INSERT INTO teste (nome) VALUES (?)',
-        ["testandooo"],
-        (tx, results) => {
-          console.log('Results', results.rowsAffected);
-          if (results.rowsAffected > 0) {
-            console.warn("teste salvo")
-          } else {
-            console.warn('Registration Failed');
-          }
-        }
-      );
-    });*/
 
-
-    /*db.transaction(tx => {
-      tx.executeSql('SELECT * FROM teste', [], (tx, results) => {
-        var temp = [];
-        for (let i = 0; i < results.rows.length; ++i) {
-          //temp.push(results.rows.item(i));
-          console.log(results.rows.item(i))
-        }
-      });
-    });*/
-
-    /*db.transaction((tx) => {
-      tx.executeSql(
-        'UPDATE teste set nome=? where id=?',
-        ["teste update", 1],
-        (tx, results) => {
-          console.log('Results', results.rowsAffected);
-          if (results.rowsAffected > 0) {
-            console.warn("teste salvo")
-          } else {
-            console.warn('Registration Failed');
-          }
-        }
-      );
-    });*/
-
-    /*db.transaction(tx => {
-      tx.executeSql(
-        'DELETE FROM  teste where id=?',
-        [2],
-        (tx, results) => {
-          if (results.rowsAffected > 0) {
-            console.warn('teste deletado');
-          } else {
-            console.warn('delete Failed');
-          }
-        }
-      );
-    });*/
-    
-  }
 
 
   _renderSugestoes = (item) => {
@@ -171,6 +113,7 @@ export default class HomeScreen extends Component {
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }}>
+        <Title style={{ fontSize: 30, marginHorizontal: 10, marginTop: 10 }}>Sugestões</Title>
         <View >
           <ScrollView style={{ backgroundColor: '#f3f0fa', height: height * 0.19, flexDirection: 'row' }}
             horizontal={true}

@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
-import { View, ScrollView, Text, Animated, TouchableOpacity, Modal, Dimensions } from 'react-native';
+import { View, ScrollView, Text, Animated, StyleSheet, Modal, Dimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Camera from '../components/Camera'
 import CardSwiper from '../components/CardSwiper'
-import { Button, TextInput } from 'react-native-paper';
+import { Avatar, Searchbar, FAB } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
 const { height, width } = Dimensions.get('window');
+import Users from '../dao/Users'
 
 class UserScreen extends Component {
   static navigationOptions = {
@@ -16,16 +17,68 @@ class UserScreen extends Component {
     super(props)
     this.state = {
       camvisible: false,
-      dialogNovoUsuario: false
+      dialogNovoUsuario: false,
+      textoSearch: '',
+      usuarios: []
     }
+  }
+
+  componentDidMount = async () => {
+
+    Users.getAll().then(res => {
+      this.setState({ usuarios: res })
+    })
+
+  }
+
+  renderUsuario = (item) => {
+    let user = item.item
+    return (
+      <View style={{ elevation: 4, backgroundColor: 'white', height: 100, width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
+        <View style={{ padding: 10, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+          <View >
+            {user.sexo == 1 ?
+              <Avatar.Image source={require('../resources/images/avatar_f.png')} />
+              :
+              <Avatar.Image source={require('../resources/images/avatar_m.png')} />
+            }
+          </View>
+
+          <View style={{ marginLeft: 10, }}>
+            <Text style={{ fontSize: 20 }}>{user.nome}</Text>
+          </View>
+        </View>
+      </View>
+    );
   }
 
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }}>
-        <Button width={200} height={30} style={{ alignSelf: 'center' }} onPress={() => this.setState({ dialogNovoUsuario: true })}>
-          <Text>Abrir Dialog</Text>
-        </Button>
+        <Searchbar
+          placeholder="Pesquisar"
+          onChangeText={query => {
+            this.setState({ textoSearch: query });
+          }}
+          value={this.state.textoSearch}
+        />
+
+
+        <FlatList
+          numColumns={2}
+          style={{ marginTop: 10, flexWrap: 'wrap' }}
+          keyExtractor={(item, index) => item.id + ""}
+          data={this.state.usuarios}
+          renderItem={item => this.renderUsuario(item)}
+        />
+
+        <FAB
+          style={styles.fab}
+          icon="add"
+          color="#fff"
+          label="Novo"
+          onPress={() => this.setState({dialogNovoUsuario: true})}
+        />
         <Dialog
           visible={this.state.dialogNovoUsuario}
           width={0.9}
@@ -60,8 +113,16 @@ class UserScreen extends Component {
       </View>
     );
   }
-
-
 }
+
+const styles = StyleSheet.create({
+  fab: {
+    position: 'absolute',
+    margin: 16,
+    right: 0,
+    bottom: 0,
+    backgroundColor:"#2f95dc"
+  },
+})
 
 export default UserScreen;
