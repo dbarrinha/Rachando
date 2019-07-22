@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import { View, ScrollView, Text, Animated, StyleSheet, Modal, Dimensions } from 'react-native';
+import { View, Switch, Text, Picker, StyleSheet, Modal, Dimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Camera from '../components/Camera'
 import CardSwiper from '../components/CardSwiper'
-import { Avatar, Searchbar, FAB } from 'react-native-paper';
+import { Avatar, Searchbar, FAB, TouchableRipple, IconButton, TextInput, RadioButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
 const { height, width } = Dimensions.get('window');
@@ -18,23 +18,58 @@ class UserScreen extends Component {
     this.state = {
       camvisible: false,
       dialogNovoUsuario: false,
+      dialogEditaUsuario: false,
+      dialogConfirm: false,
       textoSearch: '',
-      usuarios: []
+      usuarios: [],
+      usuariodetalhes: {},
+      fotoAtual: null,
+      nomeNovo: "",
+      sexoNovo: "0"
     }
   }
 
   componentDidMount = async () => {
+    this.getUsers()
+  }
 
+  getUsers = () => {
     Users.getAll().then(res => {
       this.setState({ usuarios: res })
     })
+  }
 
+  creteUsuario = () => {
+    this.setState({
+      dialogNovoUsuario: false,
+    })
+    Users.createUser(this.state.usuariodetalhes.id)
+    this.setState({
+      usuariodetalhes: {},
+    }, () => {
+      this.getUsers()
+    })
+  }
+
+  deleteUsuario = () => {
+    this.setState({
+      dialogConfirm: false,
+      dialogEditaUsuario: false,
+    })
+    Users.deleteUser(this.state.usuariodetalhes.id)
+    this.setState({
+      usuariodetalhes: {},
+    }, () => {
+      this.getUsers()
+    })
   }
 
   renderUsuario = (item) => {
     let user = item.item
     return (
-      <View style={{ elevation: 4, backgroundColor: 'white', height: 100, width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
+      <TouchableRipple onPress={() => {
+        this.setState({ dialogEditaUsuario: true, usuariodetalhes: user })
+      }} style={{ elevation: 4, backgroundColor: 'white', height: 100, width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
         <View style={{ padding: 10, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <View >
             {user.sexo == 1 ?
@@ -42,13 +77,14 @@ class UserScreen extends Component {
               :
               <Avatar.Image source={require('../resources/images/avatar_m.png')} />
             }
+
           </View>
 
           <View style={{ marginLeft: 10, }}>
             <Text style={{ fontSize: 20 }}>{user.nome}</Text>
           </View>
         </View>
-      </View>
+      </TouchableRipple>
     );
   }
 
@@ -77,19 +113,62 @@ class UserScreen extends Component {
           icon="add"
           color="#fff"
           label="Novo"
-          onPress={() => this.setState({dialogNovoUsuario: true})}
+          onPress={() => this.setState({ dialogNovoUsuario: true })}
         />
         <Dialog
           visible={this.state.dialogNovoUsuario}
           width={0.9}
-          height={0.4}
+          height={0.35}
           onHardwareBackPress={() => { this.setState({ visible: false }) }}
           dialogAnimation={new ScaleAnimation()}>
-          <CardSwiper height={height / 3.75} index={1} key={1} />
+          <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-start', }}>
+            <View style={{ alignItems: 'center', flexDirection: 'column', margin: 5 }}>
+              {this.state.fotoAtual ?
+                <View>
+                  <Avatar.Image size={24} source={{ uri: this.state.fotoAtual }} >
+                  </Avatar.Image>
+                  <IconButton
+                    icon="add-a-photo"
+                    color="#2f95dc"
+                    size={20}
+                    style={{ marginTop: -15, marginLeft: 30 }}
+                    onPress={() => console.log('Pressed')}
+                  />
+                </View>
+                :
+                <Avatar.Icon style={{ backgroundColor: "#2f95dc" }} size={100} icon="add-a-photo" />
+              }
+            </View>
+            <View>
+              <TextInput
+                style={{ backgroundColor: "#fff" }}
+                label='Nome Completo'
+                selectionColor='#f3f0fa'
+                underlineColor='#f3f0fa'
+                value={this.state.nomeNovo}
+                onChangeText={text => this.setState({ nomeNovo: text })}
+              />
+              <RadioButton.Group
+                style={{backgroundColor: 'red'}}
+                onValueChange={value => this.setState({ sexoNovo: value })}
+                value={this.state.sexoNovo}
+              >
+                <View style={{flexDirection: 'row'}}>
+                  <Text>Masculino</Text>
+                  <RadioButton value="0" />
+                </View>
+                <View>
+                  <Text>Feminino</Text>
+                  <RadioButton value="1" />
+                </View>
+              </RadioButton.Group>
+
+            </View>
+          </View>
           <DialogFooter>
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
-              onPress={() => { this.setState({ dialogNovoUsuario: false }) }}
+              onPress={() => { this.setState({ dialogNovoUsuario: false, nomeNovo: "", fotoAtual: null }) }}
             />
             <DialogButton
               text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
@@ -121,7 +200,7 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor:"#2f95dc"
+    backgroundColor: "#2f95dc"
   },
 })
 
