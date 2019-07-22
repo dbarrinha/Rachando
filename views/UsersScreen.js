@@ -139,7 +139,7 @@ class UserScreen extends Component {
                 <Avatar.Icon style={{ backgroundColor: "#2f95dc" }} size={100} icon="add-a-photo" />
               }
             </View>
-            <View>
+            <View style={{flexDirection: 'column', justifyContent: 'center'}}>
               <TextInput
                 style={{ backgroundColor: "#fff" }}
                 label='Nome Completo'
@@ -149,11 +149,11 @@ class UserScreen extends Component {
                 onChangeText={text => this.setState({ nomeNovo: text })}
               />
               <RadioButton.Group
-                style={{backgroundColor: 'red'}}
+                style={{width: "100%",backgroundColor: 'red',flexDirection: 'row', alignItems: 'center'}}
                 onValueChange={value => this.setState({ sexoNovo: value })}
                 value={this.state.sexoNovo}
               >
-                <View style={{flexDirection: 'row'}}>
+                <View style={{}}>
                   <Text>Masculino</Text>
                   <RadioButton value="0" />
                 </View>
