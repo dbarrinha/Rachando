@@ -40,10 +40,12 @@ class UserScreen extends Component {
   }
 
   creteUsuario = () => {
+    let { nomeNovo, sexoNovo, fotoAtual } = this.state
+    if (!fotoAtual) fotoAtual = ""
     this.setState({
       dialogNovoUsuario: false,
     })
-    Users.createUser(this.state.usuariodetalhes.id)
+    Users.createUser(nomeNovo, +sexoNovo, fotoAtual)
     this.setState({
       usuariodetalhes: {},
     }, () => {
@@ -72,10 +74,14 @@ class UserScreen extends Component {
       }} style={{ elevation: 4, backgroundColor: 'white', height: 100, width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
         <View style={{ padding: 10, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <View >
-            {user.sexo == 1 ?
-              <Avatar.Image source={require('../resources/images/avatar_f.png')} />
+            {user.foto == "" ?
+              user.sexo == 1 ?
+                <Avatar.Image source={require('../resources/images/avatar_f.png')} />
+                :
+                <Avatar.Image source={require('../resources/images/avatar_m.png')} />
+
               :
-              <Avatar.Image source={require('../resources/images/avatar_m.png')} />
+              <Avatar.Image  source={{ uri: `data:image/gif;base64,${user.foto}` }} />
             }
 
           </View>
@@ -118,28 +124,24 @@ class UserScreen extends Component {
         <Dialog
           visible={this.state.dialogNovoUsuario}
           width={0.9}
-          height={0.35}
+          height={0.45}
           onHardwareBackPress={() => { this.setState({ visible: false }) }}
           dialogAnimation={new ScaleAnimation()}>
-          <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'flex-start', }}>
+          <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
             <View style={{ alignItems: 'center', flexDirection: 'column', margin: 5 }}>
               {this.state.fotoAtual ?
                 <View>
-                  <Avatar.Image size={24} source={{ uri: this.state.fotoAtual }} >
-                  </Avatar.Image>
-                  <IconButton
-                    icon="add-a-photo"
-                    color="#2f95dc"
-                    size={20}
-                    style={{ marginTop: -15, marginLeft: 30 }}
-                    onPress={() => console.log('Pressed')}
-                  />
+                  <TouchableRipple onPress={() => this.setState({ camvisible: true })}>
+                    <Avatar.Image size={100} source={{ uri: `data:image/gif;base64,${this.state.fotoAtual}` }} />
+                  </TouchableRipple>
                 </View>
                 :
-                <Avatar.Icon style={{ backgroundColor: "#2f95dc" }} size={100} icon="add-a-photo" />
+                <TouchableRipple onPress={() => this.setState({ camvisible: true })}>
+                  <Avatar.Icon style={{ backgroundColor: "#2f95dc" }} size={100} icon="add-a-photo" />
+                </TouchableRipple>
               }
             </View>
-            <View style={{flexDirection: 'column', justifyContent: 'center'}}>
+            <View style={{ flexDirection: 'column', alignContent: 'center', justifyContent: 'space-around' }}>
               <TextInput
                 style={{ backgroundColor: "#fff" }}
                 label='Nome Completo'
@@ -149,17 +151,20 @@ class UserScreen extends Component {
                 onChangeText={text => this.setState({ nomeNovo: text })}
               />
               <RadioButton.Group
-                style={{width: "100%",backgroundColor: 'red',flexDirection: 'row', alignItems: 'center'}}
                 onValueChange={value => this.setState({ sexoNovo: value })}
                 value={this.state.sexoNovo}
+                style={{ marginHorizontal: 10 }}
               >
-                <View style={{}}>
-                  <Text>Masculino</Text>
-                  <RadioButton value="0" />
-                </View>
-                <View>
-                  <Text>Feminino</Text>
-                  <RadioButton value="1" />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignContent: 'center' }}>
+
+                  <View>
+                    <Text>Masculino</Text>
+                    <RadioButton value="0" />
+                  </View>
+                  <View>
+                    <Text>Feminino</Text>
+                    <RadioButton value="1" />
+                  </View>
                 </View>
               </RadioButton.Group>
 
@@ -168,11 +173,14 @@ class UserScreen extends Component {
           <DialogFooter>
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
-              onPress={() => { this.setState({ dialogNovoUsuario: false, nomeNovo: "", fotoAtual: null }) }}
+              onPress={() => { this.setState({ dialogNovoUsuario: false, nomeNovo: "", sexoNovo: "0", fotoAtual: null }) }}
             />
             <DialogButton
               text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
-              onPress={() => { this.setState({ dialogNovoUsuario: false }) }}
+              onPress={() => {
+                this.setState({ dialogNovoUsuario: false })
+                this.creteUsuario()
+              }}
             />
           </DialogFooter>
         </Dialog>
@@ -185,9 +193,18 @@ class UserScreen extends Component {
             this.setState({ camvisible: false });
           }}
         >
-          <Camera close={() => {
-            this.setState({ camvisible: false });
-          }} />
+          <Camera
+            close={() => {
+              this.setState({ camvisible: false });
+            }}
+            takepic={(foto) => {
+              this.setState({
+                camvisible: false,
+                fotoAtual: foto
+              });
+
+            }}
+          />
         </Modal>
       </View>
     );

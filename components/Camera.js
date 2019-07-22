@@ -5,6 +5,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 
 export default Camera = ( props ) => {
     const [imageUri, setImageUri] = useState(null);
+    const [imageBase64, setImageBase64] = useState(null);
     
     takePicture = async () => {
         try {
@@ -15,8 +16,10 @@ export default Camera = ( props ) => {
                     forceUpOrientation: true,
                     fixOrientation: true
                 };
-                const { uri } = await this.camera.takePictureAsync(options);
+                const { base64, uri } = await this.camera.takePictureAsync(options);
+
                 setImageUri(uri);
+                setImageBase64(base64);
             }
         } catch (err) {
             alert(err.message);
@@ -33,7 +36,7 @@ export default Camera = ( props ) => {
             if (granted["android.permission.WRITE_EXTERNAL_STORAGE"] == "granted") {
                 console.log("Foto salva.");
                 await CameraRoll.saveToCameraRoll(imageUri);
-                props.close()
+                props.takepic(imageBase64)
             } else {
                 console.log("Permissao de camera negada.");
             }
