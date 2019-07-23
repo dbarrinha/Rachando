@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { View, Switch, Text, Picker, StyleSheet, Modal, Dimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Camera from '../components/Camera'
-import CardSwiper from '../components/CardSwiper'
+import ConfirmDialog from '../components/ConfirmDialog'
 import { Avatar, Searchbar, FAB, TouchableRipple, IconButton, TextInput, RadioButton } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
@@ -25,7 +25,11 @@ class UserScreen extends Component {
       usuariodetalhes: {},
       fotoAtual: null,
       nomeNovo: "",
-      sexoNovo: "0"
+      sexoNovo: "0",
+      idEdita: 0,
+      fotoEdita: null,
+      nomeEdita: "",
+      sexoEdita: "0"
     }
   }
 
@@ -48,6 +52,27 @@ class UserScreen extends Component {
     Users.createUser(nomeNovo, +sexoNovo, fotoAtual)
     this.setState({
       usuariodetalhes: {},
+      idEdita: 0,
+      fotoEdita: null,
+      nomeEdita: "",
+      sexoEdita: "0"
+    }, () => {
+      this.getUsers()
+    })
+  }
+  updateUsuario = () => {
+    let { nomeEdita, sexoEdita, fotoEdita, idEdita } = this.state
+    if (!fotoEdita) fotoEdita = ""
+    this.setState({
+      dialogEditaUsuario: false,
+    })
+    Users.updateUser(nomeEdita, +sexoEdita, fotoEdita, idEdita)
+    this.setState({
+      usuariodetalhes: {},
+      idEdita: 0,
+      fotoEdita: null,
+      nomeEdita: "",
+      sexoEdita: "0"
     }, () => {
       this.getUsers()
     })
@@ -58,9 +83,14 @@ class UserScreen extends Component {
       dialogConfirm: false,
       dialogEditaUsuario: false,
     })
-    Users.deleteUser(this.state.usuariodetalhes.id)
+    console.log(this.state.idEdita)
+    Users.deleteUser(this.state.idEdita)
     this.setState({
       usuariodetalhes: {},
+      idEdita: 0,
+      fotoEdita: null,
+      nomeEdita: "",
+      sexoEdita: "0"
     }, () => {
       this.getUsers()
     })
@@ -70,10 +100,15 @@ class UserScreen extends Component {
     let user = item.item
     return (
       <TouchableRipple onPress={() => {
-        this.setState({ dialogEditaUsuario: true, usuariodetalhes: user })
-      }} style={{ elevation: 4, backgroundColor: 'white', height: 100, width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
+        this.setState({
+          dialogEditaUsuario: true, fotoEdita: user.foto,
+          nomeEdita: user.nome,
+          sexoEdita: user.sexo + "",
+          idEdita: user.id
+        })
+      }} style={{ elevation: 4, backgroundColor: 'white', width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
         <View style={{ padding: 10, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <View >
+          <View style={{ flexDirection: 'row' }} >
             {user.foto == "" ?
               user.sexo == 1 ?
                 <Avatar.Image source={require('../resources/images/avatar_f.png')} />
@@ -81,9 +116,11 @@ class UserScreen extends Component {
                 <Avatar.Image source={require('../resources/images/avatar_m.png')} />
 
               :
-              <Avatar.Image  source={{ uri: `data:image/gif;base64,${user.foto}` }} />
+              <Avatar.Image source={{ uri: `data:image/gif;base64,${user.foto}` }} />
             }
-
+            <TouchableRipple style={{ right: -20 }} onPress={() => { this.setState({dialogConfirm :true, idEdita: user.id}) }}>
+              <Icon size={30} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
+            </TouchableRipple>
           </View>
 
           <View style={{ marginLeft: 10, }}>
@@ -121,11 +158,12 @@ class UserScreen extends Component {
           label="Novo"
           onPress={() => this.setState({ dialogNovoUsuario: true })}
         />
+
         <Dialog
           visible={this.state.dialogNovoUsuario}
           width={0.9}
           height={0.45}
-          onHardwareBackPress={() => { this.setState({ visible: false }) }}
+          onHardwareBackPress={() => { this.setState({ dialogNovoUsuario: false }) }}
           dialogAnimation={new ScaleAnimation()}>
           <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
             <View style={{ alignItems: 'center', flexDirection: 'column', margin: 5 }}>
@@ -184,6 +222,71 @@ class UserScreen extends Component {
             />
           </DialogFooter>
         </Dialog>
+
+        <Dialog
+          visible={this.state.dialogEditaUsuario}
+          width={0.9}
+          height={0.45}
+          onHardwareBackPress={() => { this.setState({ dialogEditaUsuario: false }) }}
+          dialogAnimation={new ScaleAnimation()}>
+          <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'center' }}>
+            <View style={{ alignItems: 'center', flexDirection: 'column', margin: 5 }}>
+              {this.state.fotoEdita != "" ?
+                <View>
+                  <TouchableRipple onPress={() => this.setState({ camvisible: true })}>
+                    <Avatar.Image size={100} source={{ uri: `data:image/gif;base64,${this.state.usuariodetalhes.foto}` }} />
+                  </TouchableRipple>
+                </View>
+                :
+                <TouchableRipple onPress={() => this.setState({ camvisible: true })}>
+                  <Avatar.Icon style={{ backgroundColor: "#2f95dc" }} size={100} icon="add-a-photo" />
+                </TouchableRipple>
+              }
+            </View>
+
+            <View style={{ flexDirection: 'column', alignContent: 'center', justifyContent: 'space-around' }}>
+              <TextInput
+                style={{ backgroundColor: "#fff" }}
+                label='Nome Completo'
+                selectionColor='#f3f0fa'
+                underlineColor='#f3f0fa'
+                value={this.state.nomeEdita}
+                onChangeText={text => this.setState({ nomeEdita: text })}
+              />
+              <RadioButton.Group
+                onValueChange={value => this.setState({ sexoEdita: value })}
+                value={this.state.sexoEdita}
+                style={{ marginHorizontal: 10 }}
+              >
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around', alignContent: 'center' }}>
+
+                  <View>
+                    <Text>Masculino</Text>
+                    <RadioButton value="0" />
+                  </View>
+                  <View>
+                    <Text>Feminino</Text>
+                    <RadioButton value="1" />
+                  </View>
+                </View>
+              </RadioButton.Group>
+
+            </View>
+          </View>
+          <DialogFooter >
+            <DialogButton
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
+              onPress={() => { this.setState({ dialogEditaUsuario: false, nomeEdita: "", sexoEdita: "0", fotoEdita: null }) }}
+            />
+            <DialogButton
+              text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
+              onPress={() => {
+                this.setState({ dialogEditaUsuario: false })
+                this.updateUsuario()
+              }}
+            />
+          </DialogFooter>
+        </Dialog>
         <Modal
           animationType="slide"
           transparent={false}
@@ -200,12 +303,23 @@ class UserScreen extends Component {
             takepic={(foto) => {
               this.setState({
                 camvisible: false,
-                fotoAtual: foto
+                fotoAtual: foto,
+                fotoEdita: foto
               });
 
             }}
           />
         </Modal>
+        <ConfirmDialog
+          visible={this.state.dialogConfirm}
+          texto="Deseja Excluir este usuário?"
+          cancel={() => this.setState({ dialogConfirm: false })}
+          confirma={() => {
+            this.setState({ dialogConfirm: false })
+            this.deleteUsuario()
+          }
+          }
+        />
       </View>
     );
   }

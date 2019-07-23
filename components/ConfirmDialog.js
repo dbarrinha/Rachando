@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import { Title, Text } from 'react-native-paper'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
 
-export default class components extends Component {
+export default class ConfirmDialog extends Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -18,21 +18,21 @@ export default class components extends Component {
                 width={0.7}
                 height={0.3}
                 dialogAnimation={new ScaleAnimation()}>
-                <View style={{ flex: 1 }}>
-                    <Title>Confirmar Ação?</Title>
-                    <Text>{this.props.texto}</Text>
+                <View style={{ flex: 1 , padding: 20}}>
+                    <Title style={{fontSize: 25}}>Confirmar Ação?</Title>
+                    <Text style={{fontSize: 20}}>{this.props.texto}</Text>
                 </View>
                 <DialogFooter>
                     <DialogButton
-                        text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} > Cancelar</Icon>}
+                        text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} > </Icon>}
                         onPress={() => {
-                            this.props.cancel
+                            this.props.cancel()
                         }}
                     />
                     <DialogButton
-                        text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"}>Confirmar</Icon>}
+                        text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"}></Icon>}
                         onPress={() => {
-                            this.props.confirm
+                            this.props.confirma()
                         }}
                     />
                 </DialogFooter>
