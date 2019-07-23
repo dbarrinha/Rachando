@@ -38,7 +38,8 @@ class UserScreen extends Component {
   }
 
   getUsers = () => {
-    Users.getAll().then(res => {
+    let teste = Users.getAll().then(res => {
+      console.log(res)
       this.setState({ usuarios: res })
     })
   }

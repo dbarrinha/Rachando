@@ -56,8 +56,8 @@ export default class Users extends Component {
 
   static getAll = async () => {
     var temp = [];
-    await db.transaction(tx => {
-      tx.executeSql('SELECT * FROM user', [], (tx, results) => {
+     db.transaction(async tx => {
+      await tx.executeSql('SELECT * FROM user', [], (tx, results) => {
         for (let i = 0; i < results.rows.length; ++i) {
           temp.push(results.rows.item(i));
         }
