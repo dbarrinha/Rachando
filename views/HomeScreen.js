@@ -113,7 +113,6 @@ export default class HomeScreen extends Component {
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }}>
-        <Title style={{ fontSize: 30, marginHorizontal: 10, marginTop: 10 }}>Sugestões</Title>
         <View >
           <ScrollView style={{ backgroundColor: '#f3f0fa', height: height * 0.19, flexDirection: 'row' }}
             horizontal={true}

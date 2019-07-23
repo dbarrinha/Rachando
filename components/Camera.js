@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { StyleSheet, TouchableOpacity, Text, ImageBackground, ScrollView, View, CameraRoll, PermissionsAndroid } from "react-native";
 import { RNCamera } from "react-native-camera";
-import Icon from "react-native-vector-icons/FontAwesome";
+import Icon from "react-native-vector-icons/Ionicons";
 
-export default Camera = ( props ) => {
+export default Camera = (props) => {
     const [imageUri, setImageUri] = useState(null);
     const [imageBase64, setImageBase64] = useState(null);
-    
+    const [flash, setFlash] = useState(false);
+    const [position, setPosition] = useState(false);
+
     takePicture = async () => {
         try {
             if (this.camera) {
@@ -24,6 +26,14 @@ export default Camera = ( props ) => {
         } catch (err) {
             alert(err.message);
         }
+    }
+
+    changeFlash = async () => {
+        setFlash(!flash)
+    }
+
+    changePosition = async () => {
+        setPosition(!position)
     }
 
     submitPicture = async () => {
@@ -47,32 +57,46 @@ export default Camera = ( props ) => {
         setImageUri(null);
     }
 
+    console.log(position)
     return (
-        
         imageUri ?
             <ImageBackground style={styles.preview} source={{ uri: imageUri }}>
                 <ScrollView></ScrollView>
                 <View style={styles.buttonsPreview}>
-                    <Icon name="times" size={25} color="#fff" onPress={() => setImageUri(null)} />
-                    <Icon name="check" size={25} color="#fff" onPress={() => submitPicture()} />
+                    <Icon name={Platform.OS === 'ios' ? "ios-close" : "md-close"} size={25} color="#fff" onPress={() => setImageUri(null)} />
+                    <Icon size={25} color="#fff" onPress={() => submitPicture()} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />
                 </View>
             </ImageBackground>
             :
             <RNCamera
                 ref={camera => { this.camera = camera; }}
                 style={styles.camera}
+                type={position? RNCamera.Constants.Type.back:RNCamera.Constants.Type.front}
                 autoFocus={RNCamera.Constants.AutoFocus.on}
-                flashMode={RNCamera.Constants.FlashMode.off}
+                flashMode={flash? RNCamera.Constants.FlashMode.off:RNCamera.Constants.FlashMode.on}
             >
-                <TouchableOpacity onPress={takePicture} style={styles.capture}>
-                    <Text>PICTURE</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
+                    <TouchableOpacity onPress={changePosition} style={styles.capture}>
+                        <Icon name={Platform.OS === 'ios' ? "ios-reverse-camera" : "md-reverse-camera"} size={35} color="#fff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={takePicture} style={styles.capture}>
+                    <Icon name={Platform.OS === 'ios' ? "ios-camera" : "md-camera"} size={45} color="#fff" />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={changeFlash} style={styles.capture}>
+                        {flash ?
+                            <Icon name={Platform.OS === 'ios' ? "ios-flash" : "md-flash"} size={35} color="#fff" />
+                            :
+                            <Icon name={Platform.OS === 'ios' ? "ios-flash-off" : "md-flash-off"} size={35} color="#fff" />
+                        }
+                    </TouchableOpacity>
+                </View>
             </RNCamera>
     )
 }
 const styles = StyleSheet.create({
     camera: {
-        flex: 1
+        flex: 1,
+        justifyContent: 'flex-end'
     },
     button: {
         alignSelf: "center",
@@ -90,8 +114,6 @@ const styles = StyleSheet.create({
         padding: 30
     },
     capture: {
-        flex: 0,
-        backgroundColor: '#fff',
         borderRadius: 5,
         padding: 15,
         paddingHorizontal: 20,

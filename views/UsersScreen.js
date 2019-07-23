@@ -3,12 +3,12 @@ import { View, Switch, Text, Picker, StyleSheet, Modal, Dimensions } from 'react
 import { FlatList } from 'react-native-gesture-handler';
 import Camera from '../components/Camera'
 import ConfirmDialog from '../components/ConfirmDialog'
-import { Avatar, Searchbar, FAB, TouchableRipple, IconButton, TextInput, RadioButton } from 'react-native-paper';
+import { Avatar, Searchbar, FAB, TouchableRipple, Snackbar, TextInput, RadioButton, Title } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
 const { height, width } = Dimensions.get('window');
 import Users from '../dao/Users'
-
+import { db } from '../dao/database';
 class UserScreen extends Component {
   static navigationOptions = {
     header: null,
@@ -29,7 +29,8 @@ class UserScreen extends Component {
       idEdita: 0,
       fotoEdita: null,
       nomeEdita: "",
-      sexoEdita: "0"
+      sexoEdita: "0",
+      snack: false
     }
   }
 
@@ -38,15 +39,26 @@ class UserScreen extends Component {
   }
 
   getUsers = () => {
-    let teste = Users.getAll().then(res => {
-      console.log(res)
-      this.setState({ usuarios: res })
-    })
+    let temp = []
+    db.transaction(async tx => {
+      await tx.executeSql('SELECT * FROM user', [], (tx, results) => {
+        for (let i = 0; i < results.rows.length; ++i) {
+          temp.push(results.rows.item(i));
+        }
+        this.setState({ usuarios: temp })
+      });
+    });
   }
 
   creteUsuario = () => {
     let { nomeNovo, sexoNovo, fotoAtual } = this.state
     if (!fotoAtual) fotoAtual = ""
+    if (nomeNovo == "") {
+      this.setState({
+        snack: true,
+      })
+      return;
+    }
     this.setState({
       dialogNovoUsuario: false,
     })
@@ -55,8 +67,9 @@ class UserScreen extends Component {
       usuariodetalhes: {},
       idEdita: 0,
       fotoEdita: null,
-      nomeEdita: "",
-      sexoEdita: "0"
+      fotoAtual: null,
+      nomeNovo: "",
+      sexoNovo: "0"
     }, () => {
       this.getUsers()
     })
@@ -64,6 +77,12 @@ class UserScreen extends Component {
   updateUsuario = () => {
     let { nomeEdita, sexoEdita, fotoEdita, idEdita } = this.state
     if (!fotoEdita) fotoEdita = ""
+    if (nomeEdita == "") {
+      this.setState({
+        snack: true,
+      })
+      return;
+    }
     this.setState({
       dialogEditaUsuario: false,
     })
@@ -72,6 +91,7 @@ class UserScreen extends Component {
       usuariodetalhes: {},
       idEdita: 0,
       fotoEdita: null,
+      fotoAtual: null,
       nomeEdita: "",
       sexoEdita: "0"
     }, () => {
@@ -107,9 +127,9 @@ class UserScreen extends Component {
           sexoEdita: user.sexo + "",
           idEdita: user.id
         })
-      }} style={{ elevation: 4, backgroundColor: 'white', width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
+      }} style={{ elevation: 8, backgroundColor: 'white', width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
         <View style={{ padding: 10, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ flexDirection: 'row' }} >
+          <View style={{ flexDirection: 'row-reverse' }} >
             {user.foto == "" ?
               user.sexo == 1 ?
                 <Avatar.Image source={require('../resources/images/avatar_f.png')} />
@@ -119,12 +139,12 @@ class UserScreen extends Component {
               :
               <Avatar.Image source={{ uri: `data:image/gif;base64,${user.foto}` }} />
             }
-            <TouchableRipple style={{ right: -20 }} onPress={() => { this.setState({dialogConfirm :true, idEdita: user.id}) }}>
-              <Icon size={30} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
+            <TouchableRipple style={{ right: ((width * 0.46) / 2), position: 'absolute' }} onPress={() => { this.setState({ dialogConfirm: true, idEdita: user.id }) }}>
+              <Icon size={20} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
             </TouchableRipple>
           </View>
 
-          <View style={{ marginLeft: 10, }}>
+          <View style={{ alignSelf: 'center' }}>
             <Text style={{ fontSize: 20 }}>{user.nome}</Text>
           </View>
         </View>
@@ -135,6 +155,20 @@ class UserScreen extends Component {
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }}>
+        <Snackbar
+        styty={{position: 'relative', top: 0}}
+          visible={this.state.snack}
+          onDismiss={() => this.setState({ snack: false })}
+          action={{
+            label: 'Ok',
+            onPress: () => {
+              this.setState({ snack: false })
+            },
+          }}
+        >
+          Faltando Informações!
+        </Snackbar>
+        <Title style={{ fontSize: 35, padding: 10 }}>Usuários</Title>
         <Searchbar
           placeholder="Pesquisar"
           onChangeText={query => {
@@ -189,6 +223,7 @@ class UserScreen extends Component {
                 value={this.state.nomeNovo}
                 onChangeText={text => this.setState({ nomeNovo: text })}
               />
+
               <RadioButton.Group
                 onValueChange={value => this.setState({ sexoNovo: value })}
                 value={this.state.sexoNovo}
@@ -217,7 +252,6 @@ class UserScreen extends Component {
             <DialogButton
               text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => {
-                this.setState({ dialogNovoUsuario: false })
                 this.creteUsuario()
               }}
             />
@@ -235,7 +269,7 @@ class UserScreen extends Component {
               {this.state.fotoEdita != "" ?
                 <View>
                   <TouchableRipple onPress={() => this.setState({ camvisible: true })}>
-                    <Avatar.Image size={100} source={{ uri: `data:image/gif;base64,${this.state.usuariodetalhes.foto}` }} />
+                    <Avatar.Image size={100} source={{ uri: `data:image/gif;base64,${this.state.fotoEdita}` }} />
                   </TouchableRipple>
                 </View>
                 :
@@ -282,11 +316,11 @@ class UserScreen extends Component {
             <DialogButton
               text={<Icon size={30} name={!Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => {
-                this.setState({ dialogEditaUsuario: false })
                 this.updateUsuario()
               }}
             />
           </DialogFooter>
+
         </Dialog>
         <Modal
           animationType="slide"
@@ -321,6 +355,7 @@ class UserScreen extends Component {
           }
           }
         />
+
       </View>
     );
   }
@@ -328,11 +363,12 @@ class UserScreen extends Component {
 
 const styles = StyleSheet.create({
   fab: {
+    flex: 0,
     position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
-    backgroundColor: "#2f95dc"
+    backgroundColor: "#2f95dc",
   },
 })
 
