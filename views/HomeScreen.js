@@ -15,6 +15,7 @@ import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } fro
 import TextInputMask from 'react-native-text-input-mask';
 import Slider from 'react-native-simple-slider'
 import AsyncStorage from '@react-native-community/async-storage';
+import NumberFormat from 'react-number-format';
 //DB
 import Users from '../dao/Users'
 
@@ -56,25 +57,25 @@ export default class HomeScreen extends Component {
     }
   }
 
-  editaSugestao=async (nome,id)=>{
-    let {listaSuges} =this.state
+  editaSugestao = async (nome, id) => {
+    let { listaSuges } = this.state
     let lista = []
-    for(let i = 0; i< listaSuges.length; i++){
-      if(listaSuges[i].id == id){
-        lista.push({id, nome})
-      }else{
+    for (let i = 0; i < listaSuges.length; i++) {
+      if (listaSuges[i].id == id) {
+        lista.push({ id, nome })
+      } else {
         lista.push(listaSuges[i])
       }
-      
+
     }
-    this.setState({listaSuges : lista})
+    this.setState({ listaSuges: lista })
     await AsyncStorage.setItem('sugestoes', JSON.stringify(lista))
   }
 
   _renderSugestoes = (item) => {
     return (
       <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
-        <TouchableRipple onLongPress={() => this.setState({ sugestaoDialog: true, nomeSuges: item.item.nome, idSuges:  item.item.id})} onPress={() => this.setState({ visible: true, nome: item.item.nome })} style={{ width: width * 0.45, height: height * 0.15 }} >
+        <TouchableRipple onLongPress={() => this.setState({ sugestaoDialog: true, nomeSuges: item.item.nome, idSuges: item.item.id })} onPress={() => this.setState({ visible: true, nome: item.item.nome })} style={{ width: width * 0.45, height: height * 0.15 }} >
           <Card.Content style={{ flexDirection: 'column', justifyContent: 'space-around', margin: 10 }}>
             <Text style={{ fontSize: 25 }}>{item.item.nome}</Text>
             <Text>Nova Opção</Text>
@@ -246,20 +247,22 @@ export default class HomeScreen extends Component {
           <DialogFooter>
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
-              onPress={() => { this.setState({ sugestaoDialog: false, nomeSuges: "", idSuges: 0}) }}
+              onPress={() => { this.setState({ sugestaoDialog: false, nomeSuges: "", idSuges: 0 }) }}
             />
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => {
                 this.editaSugestao(this.state.nomeSuges, this.state.idSuges)
-                this.setState({ sugestaoDialog: false, nomeSuges: "", idSuges: 0})
-               }}
+                this.setState({ sugestaoDialog: false, nomeSuges: "", idSuges: 0 })
+              }}
             />
           </DialogFooter>
         </Dialog>
       </View>
     );
   }
+
+
 }
 
 const styles = StyleSheet.create({
