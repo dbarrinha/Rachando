@@ -73,7 +73,7 @@ export default Camera = (props) => {
                 style={styles.camera}
                 type={position? RNCamera.Constants.Type.back:RNCamera.Constants.Type.front}
                 autoFocus={RNCamera.Constants.AutoFocus.on}
-                flashMode={flash? RNCamera.Constants.FlashMode.off:RNCamera.Constants.FlashMode.on}
+                flashMode={flash? RNCamera.Constants.FlashMode.on:RNCamera.Constants.FlashMode.off}
             >
                 <View style={{ flexDirection: 'row', justifyContent: 'space-around' }}>
                     <TouchableOpacity onPress={changePosition} style={styles.capture}>

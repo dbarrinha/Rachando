@@ -9,7 +9,9 @@
     "dev": "cls && react-native run-android"
   },
   "dependencies": {
+    "@react-native-community/async-storage": "^1.5.1",
     "jetifier": "^1.6.3",
+    "lodash": "^4.17.15",
     "react": "16.8.6",
     "react-native": "0.60.0",
     "react-native-camera": "git+https://git@github.com/react-native-community/react-native-camera.git",

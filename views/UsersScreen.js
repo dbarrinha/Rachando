@@ -9,6 +9,7 @@ import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } fro
 const { height, width } = Dimensions.get('window');
 import Users from '../dao/Users'
 import { db } from '../dao/database';
+const _ = require("lodash")
 class UserScreen extends Component {
   static navigationOptions = {
     header: null,
@@ -20,8 +21,8 @@ class UserScreen extends Component {
       dialogNovoUsuario: false,
       dialogEditaUsuario: false,
       dialogConfirm: false,
-      textoSearch: '',
       usuarios: [],
+      usuariosFiltrados: [],
       usuariodetalhes: {},
       fotoAtual: null,
       nomeNovo: "",
@@ -30,7 +31,8 @@ class UserScreen extends Component {
       fotoEdita: null,
       nomeEdita: "",
       sexoEdita: "0",
-      snack: false
+      snack: false,
+      textosearch: "",
     }
   }
 
@@ -45,9 +47,19 @@ class UserScreen extends Component {
         for (let i = 0; i < results.rows.length; ++i) {
           temp.push(results.rows.item(i));
         }
-        this.setState({ usuarios: temp })
+        this.setState({ 
+          usuarios: temp,
+          usuariosFiltrados: temp
+         })
       });
     });
+  }
+
+  filtraUsuarios = () =>{
+    let lista = _.filter(this.state.usuarios, (o) => { 
+      return _.lowerCase(o.nome).includes(_.lowerCase(this.state.textosearch))
+    });
+    this.setState({usuariosFiltrados: lista})
   }
 
   creteUsuario = () => {
@@ -139,8 +151,8 @@ class UserScreen extends Component {
               :
               <Avatar.Image source={{ uri: `data:image/gif;base64,${user.foto}` }} />
             }
-            <TouchableRipple style={{ right: ((width * 0.46) / 2), position: 'absolute' }} onPress={() => { this.setState({ dialogConfirm: true, idEdita: user.id }) }}>
-              <Icon size={20} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
+            <TouchableRipple style={{ right: ((width * 0.43) / 2), position: 'absolute', width: 40, height: 40, alignItems: 'center' }} onPress={() => { this.setState({ dialogConfirm: true, idEdita: user.id }) }}>
+              <Icon size={20} style={{padding: 5}} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
             </TouchableRipple>
           </View>
 
@@ -172,9 +184,12 @@ class UserScreen extends Component {
         <Searchbar
           placeholder="Pesquisar"
           onChangeText={query => {
-            this.setState({ textoSearch: query });
+            this.setState({ textosearch: query },()=>{
+              this.filtraUsuarios()
+            });
           }}
-          value={this.state.textoSearch}
+          value={this.state.textosearch}
+          onIconPress={()=>{ console.log("incone presionado")}}
         />
 
 
@@ -182,7 +197,7 @@ class UserScreen extends Component {
           numColumns={2}
           style={{ marginTop: 10, flexWrap: 'wrap' }}
           keyExtractor={(item, index) => item.id + ""}
-          data={this.state.usuarios}
+          data={this.state.usuariosFiltrados}
           renderItem={item => this.renderUsuario(item)}
         />
 

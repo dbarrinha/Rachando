@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
 import TextInputMask from 'react-native-text-input-mask';
 import Slider from 'react-native-simple-slider'
-
+import AsyncStorage from '@react-native-community/async-storage';
 //DB
 import Users from '../dao/Users'
 
@@ -28,26 +28,55 @@ export default class HomeScreen extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      listaSuges: ["Teste1", "Teste2", "Teste3"],
+      listaSuges: [],
       listaMesa: ["0000"],
       itemAux: '',
       visible: false,
       visibleDetails: false,
       nome: '',
-      preco: 0
+      preco: 0,
+      nomeSuges: "",
+      idSuges: 0,
+      sugestaoDialog: false
     }
   }
 
+  componentDidMount = async () => {
+    this.getSugestoes()
+  }
 
+  getSugestoes = async () => {
+    try {
+      const value = await AsyncStorage.getItem('sugestoes')
+      console.log(value)
+      if (value !== null) {
+        this.setState({ listaSuges: JSON.parse(value) })
+      }
+    } catch (e) {
+    }
+  }
 
+  editaSugestao=async (nome,id)=>{
+    let {listaSuges} =this.state
+    let lista = []
+    for(let i = 0; i< listaSuges.length; i++){
+      if(listaSuges[i].id == id){
+        lista.push({id, nome})
+      }else{
+        lista.push(listaSuges[i])
+      }
+      
+    }
+    this.setState({listaSuges : lista})
+    await AsyncStorage.setItem('sugestoes', JSON.stringify(lista))
+  }
 
   _renderSugestoes = (item) => {
-    //return (<CardHeader item={item} cardAction={()=>{}} />)
     return (
       <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
-        <TouchableRipple onPress={() => this.setState({ visible: true })} style={{ width: width * 0.45, height: height * 0.15 }} >
-          <Card.Content style={{ justifyContent: 'flex-start', margin: 10 }}>
-            <Text style={{ fontSize: 25 }}>{item.item}</Text>
+        <TouchableRipple onLongPress={() => this.setState({ sugestaoDialog: true, nomeSuges: item.item.nome, idSuges:  item.item.id})} onPress={() => this.setState({ visible: true, nome: item.item.nome })} style={{ width: width * 0.45, height: height * 0.15 }} >
+          <Card.Content style={{ flexDirection: 'column', justifyContent: 'space-around', margin: 10 }}>
+            <Text style={{ fontSize: 25 }}>{item.item.nome}</Text>
             <Text>Nova Opção</Text>
           </Card.Content>
         </TouchableRipple>
@@ -120,7 +149,7 @@ export default class HomeScreen extends Component {
             <FlatList
               showsHorizontalScrollIndicator={false}
               horizontal={true}
-              data={["Teste1", "Teste2", "Teste3"]}
+              data={this.state.listaSuges}
               renderItem={item => this._renderSugestoes(item)}>
             </FlatList>
             <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
@@ -181,18 +210,50 @@ export default class HomeScreen extends Component {
               value={+this.state.preco}
               onValueChange={preco => this.setState({ preco: +preco })}
               disabledHoverEffect={false}
-              step={0.5}
-              maximumValue={100}
+              step={0.1}
+              maximumValue={30}
             />
           </DialogContent>
           <DialogFooter>
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
-              onPress={() => { this.setState({ visible: false }) }}
+              onPress={() => { this.setState({ visible: false, nome: "", preco: 0 }) }}
             />
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => { this.addItemMesa(this.state.nome) }}
+            />
+          </DialogFooter>
+        </Dialog>
+        <Dialog
+          visible={this.state.sugestaoDialog}
+          width={0.9}
+          height={0.4}
+          onHardwareBackPress={() => { this.setState({ sugestaoDialog: false }) }}
+          dialogAnimation={new ScaleAnimation()}>
+          <DialogContent style={{ flex: 1, justifyContent: 'space-around' }}>
+            <Text style={{ marginHorizontal: 10, fontSize: 25 }} ></Text>
+            <TextInput
+              style={styles.input}
+              label='Nome'
+              selectionColor='#f3f0fa'
+              underlineColor='#f3f0fa'
+              value={this.state.nomeSuges}
+              onChangeText={text => this.setState({ nomeSuges: text })}
+            />
+
+          </DialogContent>
+          <DialogFooter>
+            <DialogButton
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
+              onPress={() => { this.setState({ sugestaoDialog: false, nomeSuges: "", idSuges: 0}) }}
+            />
+            <DialogButton
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
+              onPress={() => {
+                this.editaSugestao(this.state.nomeSuges, this.state.idSuges)
+                this.setState({ sugestaoDialog: false, nomeSuges: "", idSuges: 0})
+               }}
             />
           </DialogFooter>
         </Dialog>
