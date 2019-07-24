@@ -12,10 +12,10 @@ import { Divider, Card, TextInput, TouchableRipple, Chip, Button, Title } from '
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
-import TextInputMask from 'react-native-text-input-mask';
+//import TextInputMask from 'react-native-text-input-mask';
 import Slider from 'react-native-simple-slider'
 import AsyncStorage from '@react-native-community/async-storage';
-import NumberFormat from 'react-number-format';
+import { TextInputMask } from 'react-native-masked-text'
 //DB
 import Users from '../dao/Users'
 
@@ -30,15 +30,16 @@ export default class HomeScreen extends Component {
     super(props);
     this.state = {
       listaSuges: [],
-      listaMesa: ["0000"],
+      listaMesa: [],
       itemAux: '',
-      visible: false,
+      visible: true,
       visibleDetails: false,
       nome: '',
-      preco: 0,
+      preco: "0",
       nomeSuges: "",
       idSuges: 0,
-      sugestaoDialog: false
+      sugestaoDialog: false,
+      slider: "0"
     }
   }
 
@@ -71,6 +72,7 @@ export default class HomeScreen extends Component {
     this.setState({ listaSuges: lista })
     await AsyncStorage.setItem('sugestoes', JSON.stringify(lista))
   }
+
 
   _renderSugestoes = (item) => {
     return (
@@ -175,7 +177,7 @@ export default class HomeScreen extends Component {
         <Dialog
           visible={this.state.visible}
           width={0.9}
-          height={0.4}
+          height={0.5}
           onHardwareBackPress={() => { this.setState({ visible: false }) }}
           dialogAnimation={new ScaleAnimation()}>
           <DialogContent style={{ flex: 1, justifyContent: 'space-around' }}>
@@ -188,32 +190,49 @@ export default class HomeScreen extends Component {
               value={this.state.nome}
               onChangeText={text => this.setState({ nome: text })}
             />
+
             <TextInput
               style={styles.input}
-              label='Preço'
               selectionColor='#f3f0fa'
               underlineColor='#f3f0fa'
-              value={this.state.preco + ""}
               render={props =>
                 <TextInputMask
                   {...props}
-                  onChangeText={(formatted, extracted) => {
-                    console.log(formatted)
-                    console.log(extracted)
-                    this.setState({ preco: +extracted })
+                  type={'money'}
+                  ref={(ref) => this.moneyField = ref}
+                  options={{
+                    precision: 2,
+                    separator: ',',
+                    delimiter: '.',
+                    unit: 'R$',
+                    suffixUnit: ''
                   }}
-                  mask="$[999990].[99]"
+                  value={this.state.preco}
+                  onChangeText={text => {
+                    this.setState({
+                      preco: text
+                    })
+                    setTimeout(() => {
+                      console.log(this.moneyField.getRawValue())
+                      this.setState({
+                        slider: this.moneyField.getRawValue()
+                      })
+                    }, 200)
+                  }}
                 />
               }
             />
+
+
             <Slider
               sliderWidth={width * 0.8}
-              value={+this.state.preco}
-              onValueChange={preco => this.setState({ preco: +preco })}
+              value={+this.state.slider}
+              onValueChange={preco => this.setState({ preco: +preco, slider: preco })}
               disabledHoverEffect={false}
               step={0.1}
               maximumValue={30}
             />
+
           </DialogContent>
           <DialogFooter>
             <DialogButton
@@ -222,18 +241,21 @@ export default class HomeScreen extends Component {
             />
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
-              onPress={() => { this.addItemMesa(this.state.nome) }}
+              onPress={() => {
+                console.log(this.moneyField.getRawValue())
+                this.addItemMesa(this.state.nome)
+              }}
             />
           </DialogFooter>
         </Dialog>
         <Dialog
           visible={this.state.sugestaoDialog}
-          width={0.9}
-          height={0.4}
+          width={0.8}
+          height={0.3}
           onHardwareBackPress={() => { this.setState({ sugestaoDialog: false }) }}
           dialogAnimation={new ScaleAnimation()}>
           <DialogContent style={{ flex: 1, justifyContent: 'space-around' }}>
-            <Text style={{ marginHorizontal: 10, fontSize: 25 }} ></Text>
+            <Text style={{ marginHorizontal: 10, fontSize: 25 }} >Edita Sugestão</Text>
             <TextInput
               style={styles.input}
               label='Nome'
