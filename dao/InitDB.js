@@ -10,7 +10,7 @@ export const initDB = () => {
                 if (res.rows.length == 0) {
                     txn.executeSql('DROP TABLE IF EXISTS mesa', []);
                     txn.executeSql(
-                        'CREATE TABLE IF NOT EXISTS mesa(id INTEGER PRIMARY KEY AUTOINCREMENT, descricao VARCHAR(30))',
+                        'CREATE TABLE IF NOT EXISTS mesa(id INTEGER PRIMARY KEY AUTOINCREMENT, nome VARCHAR(15),descricao VARCHAR(30),status INTEGER)',
                         []
                     );
                 }

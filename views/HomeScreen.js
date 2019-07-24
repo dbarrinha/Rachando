@@ -156,7 +156,7 @@ export default class HomeScreen extends Component {
               renderItem={item => this._renderSugestoes(item)}>
             </FlatList>
             <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
-              <TouchableRipple onPress={() => this.setState({ visible: true })} style={{ width: width * 0.35, height: height * 0.15 }} >
+              <TouchableRipple  style={{ width: width * 0.35, height: height * 0.15 }} >
                 <Card.Content style={{ alignItems: 'center' }}>
                   <Text style={{ fontSize: 40, fontFamily: 'LibelSuitRg-Regular', color: '#383838' }}>+</Text>
                   <Text>Nova Opção</Text>
@@ -242,7 +242,6 @@ export default class HomeScreen extends Component {
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => {
-                console.log(this.moneyField.getRawValue())
                 this.addItemMesa(this.state.nome)
               }}
             />
