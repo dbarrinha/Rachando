@@ -6,7 +6,7 @@ import {
   Text,
   StyleSheet,
   Platform,
-  PermissionsAndroid
+  StatusBar
 } from 'react-native';
 import { Divider, Card, TextInput, TouchableRipple, Chip, Button, Title } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -18,7 +18,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { TextInputMask } from 'react-native-masked-text'
 //DB
 import Users from '../dao/Users'
-
+const numeral = require('numeral');
 const { height, width } = Dimensions.get('window');
 export default class HomeScreen extends Component {
 
@@ -32,14 +32,14 @@ export default class HomeScreen extends Component {
       listaSuges: [],
       listaMesa: [],
       itemAux: '',
-      visible: true,
+      visible: false,
       visibleDetails: false,
       nome: '',
-      preco: "0",
+      preco: 0,
       nomeSuges: "",
       idSuges: 0,
       sugestaoDialog: false,
-      slider: "0"
+      slider: 0
     }
   }
 
@@ -93,8 +93,8 @@ export default class HomeScreen extends Component {
         <TouchableRipple onPress={() => console.log("detalhes")}>
           <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ alignItems: 'flex-start', margin: 10 }}>
-              <Text style={{ fontSize: 25 }}>{item.item}</Text>
-              <Text style={{ color: '#474747' }}>0000</Text>
+              <Text style={{ fontSize: 25 }}>{item.item.nome}</Text>
+              <Text style={{ color: '#474747' }}>{item.item.preco}</Text>
               <Text style={{ color: '#474747' }}>0000</Text>
             </View>
             <Button onPress={() => console.log("teste")} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2 }}>
@@ -123,14 +123,16 @@ export default class HomeScreen extends Component {
     );
   }
 
-  addItemMesa = (item) => {
+  addItemMesa = (nome, preco) => {
     let lista = this.state.listaMesa
-    lista.push(item)
+    let consumo = {nome, preco  }
+    lista.push(consumo)
     this.setState({
       listaMesa: lista,
       visible: false,
       nome: "",
-      preco: 0
+      preco: 0,
+      slider: 0
     })
   }
 
@@ -138,13 +140,15 @@ export default class HomeScreen extends Component {
     this.setState({
       visible: false,
       nome: "",
-      preco: 0
+      preco: 0,
+      slider: 0
     })
   }
 
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }}>
+        <StatusBar backgroundColor="#f3f0fa" barStyle="dark-content" />
         <View >
           <ScrollView style={{ backgroundColor: '#f3f0fa', height: height * 0.19, flexDirection: 'row' }}
             horizontal={true}
@@ -195,6 +199,7 @@ export default class HomeScreen extends Component {
               style={styles.input}
               selectionColor='#f3f0fa'
               underlineColor='#f3f0fa'
+              keyboardType="numeric"
               render={props =>
                 <TextInputMask
                   {...props}
@@ -202,22 +207,24 @@ export default class HomeScreen extends Component {
                   ref={(ref) => this.moneyField = ref}
                   options={{
                     precision: 2,
-                    separator: ',',
-                    delimiter: '.',
+                    separator: '.',
+                    delimiter: ',',
                     unit: 'R$',
                     suffixUnit: ''
                   }}
                   value={this.state.preco}
                   onChangeText={text => {
+                    console.log(numeral(text))
                     this.setState({
-                      preco: text
+                      preco: numeral(text).value(),
+                      slider: numeral(text).value()
                     })
-                    setTimeout(() => {
+                    /*setTimeout(() => {
                       console.log(this.moneyField.getRawValue())
                       this.setState({
                         slider: this.moneyField.getRawValue()
                       })
-                    }, 200)
+                    }, 100)*/
                   }}
                 />
               }
@@ -226,10 +233,9 @@ export default class HomeScreen extends Component {
 
             <Slider
               sliderWidth={width * 0.8}
-              value={+this.state.slider}
-              onValueChange={preco => this.setState({ preco: +preco, slider: preco })}
-              disabledHoverEffect={false}
-              step={0.1}
+              value={this.state.preco > 30 ? 30 : this.state.preco}
+              onValueChange={preco => this.setState({ preco: numeral(preco).value(), slider: numeral(preco).value() })}
+              step={0.5}
               maximumValue={30}
             />
 
@@ -242,7 +248,7 @@ export default class HomeScreen extends Component {
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => {
-                this.addItemMesa(this.state.nome)
+                this.addItemMesa(this.state.nome,this.state.preco)
               }}
             />
           </DialogFooter>

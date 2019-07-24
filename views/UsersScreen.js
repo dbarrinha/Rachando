@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Switch, Text, Picker, StyleSheet, Modal, Dimensions } from 'react-native';
+import { View, Switch, Text, StatusBar , StyleSheet, Modal, Dimensions } from 'react-native';
 import { FlatList } from 'react-native-gesture-handler';
 import Camera from '../components/Camera'
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -167,6 +167,7 @@ class UserScreen extends Component {
   render() {
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }}>
+        <StatusBar backgroundColor="#f3f0fa" barStyle="dark-content" />
         <Snackbar
         styty={{position: 'relative', top: 0}}
           visible={this.state.snack}
