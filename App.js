@@ -11,6 +11,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 ///VIEWS
 import home from './views/HomeScreen'
 import users from './views/UsersScreen'
+import mesas from './views/MesasScreen'
+
 ///DB
 import { initDB } from './dao/InitDB'
 
@@ -91,6 +93,7 @@ const TabNavigator = createMaterialBottomTabNavigator({
 const AppNavigation = createAppContainer(createSwitchNavigator(
   {
     AuthLoading: AuthLoadingScreen,
+    Home: mesas,
     App: TabNavigator,
   },
   {

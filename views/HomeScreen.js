@@ -8,7 +8,7 @@ import {
   Platform,
   StatusBar
 } from 'react-native';
-import { Divider, Card, TextInput, TouchableRipple, Chip, Button, Title } from 'react-native-paper';
+import { Divider, Card, TextInput, TouchableRipple, Chip, Button, FAB } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
@@ -125,7 +125,7 @@ export default class HomeScreen extends Component {
 
   addItemMesa = (nome, preco) => {
     let lista = this.state.listaMesa
-    let consumo = {nome, preco  }
+    let consumo = { nome, preco }
     lista.push(consumo)
     this.setState({
       listaMesa: lista,
@@ -154,13 +154,14 @@ export default class HomeScreen extends Component {
             horizontal={true}
             showsHorizontalScrollIndicator={false}>
             <FlatList
+              ref={ref => this.flatlist = ref}
               showsHorizontalScrollIndicator={false}
               horizontal={true}
               data={this.state.listaSuges}
               renderItem={item => this._renderSugestoes(item)}>
             </FlatList>
             <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
-              <TouchableRipple  style={{ width: width * 0.35, height: height * 0.15 }} >
+              <TouchableRipple style={{ width: width * 0.35, height: height * 0.15 }} >
                 <Card.Content style={{ alignItems: 'center' }}>
                   <Text style={{ fontSize: 40, fontFamily: 'LibelSuitRg-Regular', color: '#383838' }}>+</Text>
                   <Text>Nova Opção</Text>
@@ -219,12 +220,6 @@ export default class HomeScreen extends Component {
                       preco: numeral(text).value(),
                       slider: numeral(text).value()
                     })
-                    /*setTimeout(() => {
-                      console.log(this.moneyField.getRawValue())
-                      this.setState({
-                        slider: this.moneyField.getRawValue()
-                      })
-                    }, 100)*/
                   }}
                 />
               }
@@ -248,7 +243,7 @@ export default class HomeScreen extends Component {
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
               onPress={() => {
-                this.addItemMesa(this.state.nome,this.state.preco)
+                this.addItemMesa(this.state.nome, this.state.preco)
               }}
             />
           </DialogFooter>
@@ -285,6 +280,14 @@ export default class HomeScreen extends Component {
             />
           </DialogFooter>
         </Dialog>
+        <FAB
+          style={styles.fab}
+          icon="add"
+          color="#fff"
+          label="Novo Consumo"
+          onPress={() => this.setState({ dialogNovoUsuario: true })}
+        />
+        
       </View>
     );
   }
@@ -296,4 +299,14 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: 'white'
   },
+  fab: {
+    flex: 0,
+    position: 'absolute',
+    marginBottom: 26,
+    bottom: 0,
+    alignSelf: 'center',
+    backgroundColor: "#2f95dc",
+  },
 }); 
+
+

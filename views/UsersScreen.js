@@ -139,7 +139,7 @@ class UserScreen extends Component {
           sexoEdita: user.sexo + "",
           idEdita: user.id
         })
-      }} style={{ elevation: 8, backgroundColor: 'white', width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center' }}>
+      }} style={{ elevation: 8, backgroundColor: 'white', width: width * 0.46, marginHorizontal: width * 0.02, marginVertical: 5, justifyContent: 'center', borderRadius: 6 }}>
         <View style={{ padding: 10, flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
           <View style={{ flexDirection: 'row-reverse' }} >
             {user.foto == "" ?
@@ -181,9 +181,10 @@ class UserScreen extends Component {
         >
           Faltando Informações!
         </Snackbar>
-        <Title style={{ fontSize: 35, padding: 10 }}>Usuários</Title>
+        <Text style={{color: '#424040', fontSize: 35, marginHorizontal:width * 0.02, marginVertical: 10, fontWeight: 'bold', textShadowOffset: {width: 100,height: 100} }}>Usuários</Text>
         <Searchbar
           placeholder="Pesquisar"
+          style={{borderRadius: 15, marginHorizontal: width * 0.02}}
           onChangeText={query => {
             this.setState({ textosearch: query },()=>{
               this.filtraUsuarios()
