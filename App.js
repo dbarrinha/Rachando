@@ -28,12 +28,19 @@ class AuthLoadingScreen extends React.Component {
     try {
       const value = await AsyncStorage.getItem('sugestoes')
       if (value === null) {
-        await AsyncStorage.setItem('sugestoes', JSON.stringify([{id: 1, nome: "Cerveja"},{id: 2, nome: "Batata Frita"},{id: 3, nome: "Suco"}]))
+        await AsyncStorage.setItem('sugestoes', JSON.stringify([{ id: 1, nome: "Cerveja" }, { id: 2, nome: "Batata Frita" }, { id: 3, nome: "Suco" }]))
       }
     } catch (e) {
     }
-    
-    this.props.navigation.navigate('Mesas');
+    const mesa_ativa = await AsyncStorage.getItem('mesaativa')
+    if (mesa_ativa === null) {
+      this.props.navigation.navigate('Mesas');
+    } else {
+      this.props.navigation.navigate('App', {
+        mesa: JSON.parse(mesa_ativa)
+      })
+    }
+
   };
 
   render() {

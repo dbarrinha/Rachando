@@ -45,8 +45,10 @@ export default class HomeScreen extends Component {
   }
 
   componentDidMount = async () => {
+    
     const { navigation } = this.props;
     let mesa = navigation.dangerouslyGetParent().dangerouslyGetParent().getParam('mesa')
+    await AsyncStorage.setItem('mesaativa', JSON.stringify(mesa))
     this.setState({
       mesa
     })

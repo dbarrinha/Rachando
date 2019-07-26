@@ -23,6 +23,7 @@ import {
   Chip,
   Searchbar
 } from 'react-native-paper';
+import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons'
 import { db } from '../dao/database';
 import ConfirmDialog from '../components/ConfirmDialog'
@@ -45,7 +46,8 @@ export default class MesasScreen extends Component {
     this.moment = require('moment');
   }
 
-  componentDidMount = () => {
+  componentDidMount = async () => {
+    await AsyncStorage.removeItem('mesaativa')
     this.getMesas()
   }
 
