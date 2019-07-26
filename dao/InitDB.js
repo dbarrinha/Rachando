@@ -63,7 +63,7 @@ export const initDB = () => {
                 if (res.rows.length == 0) {
                     txn.executeSql('DROP TABLE IF EXISTS usuarioconsumo', []);
                     txn.executeSql(
-                        'CREATE TABLE IF NOT EXISTS usuarioconsumo (id INTEGER PRIMARY KEY AUTOINCREMENT, id_consumo INTEGER, id_usuario INTEGER'+
+                        'CREATE TABLE IF NOT EXISTS usuarioconsumo(id INTEGER PRIMARY KEY AUTOINCREMENT, id_consumo INTEGER, id_usuario INTEGER,'+
                             'FOREIGN KEY(id_consumo) REFERENCES consumo(id), FOREIGN KEY(id_usuario) REFERENCES user(id))',
                         []
                     );

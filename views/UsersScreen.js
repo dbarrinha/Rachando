@@ -191,7 +191,6 @@ class UserScreen extends Component {
             });
           }}
           value={this.state.textosearch}
-          onIconPress={()=>{ console.log("incone presionado")}}
         />
 
 

@@ -27,14 +27,13 @@ class AuthLoadingScreen extends React.Component {
     initDB()
     try {
       const value = await AsyncStorage.getItem('sugestoes')
-      console.log(value)
       if (value === null) {
         await AsyncStorage.setItem('sugestoes', JSON.stringify([{id: 1, nome: "Cerveja"},{id: 2, nome: "Batata Frita"},{id: 3, nome: "Suco"}]))
       }
     } catch (e) {
     }
     
-    this.props.navigation.navigate('App');
+    this.props.navigation.navigate('Home');
   };
 
   render() {
