@@ -39,18 +39,23 @@ export default class HomeScreen extends Component {
       nomeSuges: "",
       idSuges: 0,
       sugestaoDialog: false,
-      slider: 0
+      slider: 0,
+      mesa: {}
     }
   }
 
   componentDidMount = async () => {
+    const { navigation } = this.props;
+    let mesa = navigation.dangerouslyGetParent().dangerouslyGetParent().getParam('mesa')
+    this.setState({
+      mesa
+    })
     this.getSugestoes()
   }
 
   getSugestoes = async () => {
     try {
       const value = await AsyncStorage.getItem('sugestoes')
-      console.log(value)
       if (value !== null) {
         this.setState({ listaSuges: JSON.parse(value) })
       }
@@ -149,6 +154,28 @@ export default class HomeScreen extends Component {
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }}>
         <StatusBar backgroundColor="#f3f0fa" barStyle="dark-content" />
+        <View
+          style={{
+            marginHorizontal: width * 0.02,
+            flexDirection: 'row',
+            justifyContent: 'space-between'
+          }}>
+
+          <TouchableRipple onPress={() => this.props.navigation.navigate('Mesas')} style={{ padding: 10, flexDirection: 'column', justifyContent: 'center' }}>
+            <Icon size={30} color="#424040" name={Platform.OS === 'ios' ? "ios-close" : "md-arrow-round-back"} />
+          </TouchableRipple>
+          <Text
+            style={{
+              color: '#424040',
+              fontSize: 23,
+              fontWeight: 'bold',
+              textShadowOffset: { width: 100, height: 100 },
+              alignSelf: 'center',
+              marginRight: 10
+            }}>
+            {this.state.mesa.nome}
+          </Text>
+        </View>
         <View >
           <ScrollView style={{ backgroundColor: '#f3f0fa', height: height * 0.19, flexDirection: 'row' }}
             horizontal={true}
@@ -287,7 +314,7 @@ export default class HomeScreen extends Component {
           label="Novo Consumo"
           onPress={() => this.setState({ dialogNovoUsuario: true })}
         />
-        
+
       </View>
     );
   }
@@ -307,6 +334,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     backgroundColor: "#2f95dc",
   },
-}); 
+});
 
 

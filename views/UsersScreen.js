@@ -37,6 +37,9 @@ class UserScreen extends Component {
   }
 
   componentDidMount = async () => {
+    const { navigation } = this.props;
+    const mesa = navigation.getParam('mesa', null);
+    console.log(this.props.navigation.dangerouslyGetParent().dangerouslyGetParent().getParam('mesa'))
     this.getUsers()
   }
 

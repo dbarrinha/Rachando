@@ -20,13 +20,14 @@ import {
   TouchableRipple,
   FAB,
   TextInput,
-  Chip
+  Chip,
+  Searchbar
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/Ionicons'
 import { db } from '../dao/database';
 import ConfirmDialog from '../components/ConfirmDialog'
 const { height, width } = Dimensions.get('window');
-
+const _ = require("lodash")
 export default class MesasScreen extends Component {
   constructor(props) {
     super(props)
@@ -36,7 +37,9 @@ export default class MesasScreen extends Component {
       descricaoNovo: "",
       idEdita: "",
       lista: [],
-      dialogConfirm: false
+      listaFiltrada: [],
+      dialogConfirm: false,
+      textosearch: "",
       //lista: [{ nome: "teste", descricao: "0000000" }, { nome: "teste2", descricao: "0000000" }, { nome: "teste3", descricao: "0000000" }]
     }
     this.moment = require('moment');
@@ -54,7 +57,8 @@ export default class MesasScreen extends Component {
           temp.push(results.rows.item(i));
         }
         this.setState({
-          lista: temp
+          lista: temp,
+          listaFiltrada: temp,
         })
       });
     });
@@ -69,7 +73,7 @@ export default class MesasScreen extends Component {
         (tx, results) => {
           if (results.rowsAffected > 0) {
             this.getMesas()
-            this.setState({idEdita: ""})
+            this.setState({ idEdita: "" })
             console.warn('teste deletado');
           } else {
             console.warn('delete Failed');
@@ -121,10 +125,15 @@ export default class MesasScreen extends Component {
     let mesa = item.item
     return (
       <TouchableRipple
+        onPress={()=>{
+          this.props.navigation.navigate('App',{
+            mesa
+          })
+        }}
         style={{
           marginHorizontal: 10,
           marginVertical: 10,
-          borderRadius: 4,
+          borderRadius: 10,
           elevation: 6,
           height: height * 0.2,
           backgroundColor: '#fff'
@@ -134,24 +143,67 @@ export default class MesasScreen extends Component {
             {this.getDias(mesa.data)}
           </Chip>
           <View style={{ padding: 10 }}>
-            <Text style={{fontWeight: 'bold', fontSize: 20}}>{mesa.nome}</Text>
-            <Text>{mesa.descricao}</Text>
-            <Text>{mesa.data}</Text>
+            <Text style={{ fontWeight: 'bold', fontSize: 20 }}>{mesa.nome}</Text>
+            <Text style={{ color: '#424040' }}>{mesa.descricao}</Text>
+            <Text style={{ color: '#424040' }}>{mesa.data}</Text>
           </View>
-          <TouchableRipple onPress={() => this.setState({dialogConfirm: true, idEdita: mesa.id})} style={{ right: ((width) * 0.02), top: 10, position: 'absolute', width: 40, height: 40, alignItems: 'center'}} >
+          <TouchableRipple onPress={() => this.setState({ dialogConfirm: true, idEdita: mesa.id })} style={{ right: ((width) * 0.02), top: 10, position: 'absolute', width: 40, height: 40, alignItems: 'center' }} >
             <Icon size={20} style={{ padding: 5 }} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
           </TouchableRipple>
         </View>
       </TouchableRipple>
     )
   }
+
+  filtraMesas = () => {
+    let lista = _.filter(this.state.lista, (o) => {
+      return (
+        _.lowerCase(o.nome).includes(_.lowerCase(this.state.textosearch))
+        ||
+        _.lowerCase(o.descricao).includes(_.lowerCase(this.state.textosearch))
+      )
+    });
+    this.setState({ listaFiltrada: lista })
+  }
+
   render() {
+    console.log("render")
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }} >
         <StatusBar backgroundColor="#f3f0fa" barStyle="dark-content" />
-        <Text style={{ color: '#424040', fontSize: 35, marginHorizontal: width * 0.02, marginVertical: 10, fontWeight: 'bold', textShadowOffset: { width: 100, height: 100 } }}>Mesas</Text>
+        <View
+          style={{
+            marginVertical: 10,
+            marginHorizontal: width * 0.02,
+            flexDirection: 'row',
+            justifyContent: 'space-between'
+          }}>
+          <Text
+            style={{
+              color: '#424040',
+              fontSize: 35,
+              fontWeight: 'bold',
+              textShadowOffset: { width: 100, height: 100 }
+            }}>
+            Testes
+          </Text>
+          <TouchableRipple style={{ padding: 10, flexDirection: 'column', justifyContent: 'center' }}>
+            <Icon size={20} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
+          </TouchableRipple>
+        </View>
+        <Searchbar
+          placeholder="Pesquisar Mesas"
+          style={{ borderRadius: 15, marginHorizontal: width * 0.02 }}
+          onChangeText={query => {
+            this.setState({ textosearch: query }, () => {
+              this.filtraMesas()
+            });
+          }}
+          value={this.state.textosearch}
+        />
         <FlatList
-          data={this.state.lista}
+          style={{ marginVertical: 10 }}
+          data={this.state.listaFiltrada}
           keyExtractor={(item, index) => item.id + ""}
           renderItem={item => this.renderMesa(item)}
         />
@@ -163,15 +215,21 @@ export default class MesasScreen extends Component {
           dialogAnimation={new ScaleAnimation()}>
           <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-evenly' }}>
             <Text style={{ alignSelf: 'center' }}>Nova Mesa</Text>
+            <View style={{flexDirection: 'column'}}>
+              <TextInput
+                style={{ backgroundColor: "#fff" }}
+                label='Nome'
+                autoCapitalize="words"
+                value={this.state.nomeNovo}
+                onChangeText={text => this.setState({ nomeNovo: text })}
+                maxLength={15}
+              >
+
+              </TextInput>
+              <Text style={{ fontSize: 15, alignSelf: 'flex-end', color:'#424040', marginHorizontal:5 }}>{this.state.nomeNovo.length + "/15"}</Text>
+            </View>
             <TextInput
-              style={{ backgroundColor: "#fff" }}
-              label='Nome'
-              autoCapitalize="words"
-              value={this.state.nomeNovo}
-              onChangeText={text => this.setState({ nomeNovo: text })}
-            />
-            <TextInput
-              style={{ backgroundColor: "#fff" }}
+              style={{ backgroundColor: "#fff" }}f
               label='Descrição'
               value={this.state.descricaoNovo}
               onChangeText={text => this.setState({ descricaoNovo: text })}
@@ -219,7 +277,7 @@ const styles = StyleSheet.create({
   fab: {
     flex: 0,
     position: 'absolute',
-    marginBottom: 26,
+    marginBottom: 20,
     bottom: 0,
     alignSelf: 'center',
     backgroundColor: "#2f95dc",

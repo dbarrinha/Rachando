@@ -33,7 +33,7 @@ class AuthLoadingScreen extends React.Component {
     } catch (e) {
     }
     
-    this.props.navigation.navigate('Home');
+    this.props.navigation.navigate('Mesas');
   };
 
   render() {
@@ -92,7 +92,7 @@ const TabNavigator = createMaterialBottomTabNavigator({
 const AppNavigation = createAppContainer(createSwitchNavigator(
   {
     AuthLoading: AuthLoadingScreen,
-    Home: mesas,
+    Mesas: mesas,
     App: TabNavigator,
   },
   {
