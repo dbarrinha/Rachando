@@ -79,8 +79,8 @@ UserStack.navigationOptions = {
 };
 
 const TabNavigator = createMaterialBottomTabNavigator({
-  UserStack,
   HomeStack,
+  UserStack,
 }, {
     activeColor: '#3e2465',
     inactiveColor: '#3e2465',

@@ -125,8 +125,8 @@ export default class MesasScreen extends Component {
     let mesa = item.item
     return (
       <TouchableRipple
-        onPress={()=>{
-          this.props.navigation.navigate('App',{
+        onPress={() => {
+          this.props.navigation.navigate('App', {
             mesa
           })
         }}
@@ -166,6 +166,21 @@ export default class MesasScreen extends Component {
     this.setState({ listaFiltrada: lista })
   }
 
+  _renderMesaVazia = () => {
+    return (
+      <View style={{ flex: 1 }}>
+        <View style={{
+          marginBottom: 20,
+          bottom: 0,
+          alignSelf: 'center', marginTop: width * 0.5, elevation: 10, flexDirection: 'column'
+        }}>
+          <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#424040' }}>Crie uma Mesa!</Text>
+          <Icon color='#424040' size={50} name={Platform.OS === 'ios' ? "ios-arrow-round-down" : "md-arrow-round-down"} />
+        </View>
+      </View>
+    );
+  }
+
   render() {
     console.log("render")
     return (
@@ -185,10 +200,10 @@ export default class MesasScreen extends Component {
               fontWeight: 'bold',
               textShadowOffset: { width: 100, height: 100 }
             }}>
-            Testes
+            Mesas
           </Text>
           <TouchableRipple style={{ padding: 10, flexDirection: 'column', justifyContent: 'center' }}>
-            <Icon size={20} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
+            <Icon size={25} color="black" name={Platform.OS === 'ios' ? "ios-funnel" : "md-funnel"} />
           </TouchableRipple>
         </View>
         <Searchbar
@@ -213,9 +228,17 @@ export default class MesasScreen extends Component {
           height={0.45}
           onHardwareBackPress={() => { this.setState({ dialogNovaMesa: false }) }}
           dialogAnimation={new ScaleAnimation()}>
-          <View style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-evenly' }}>
-            <Text style={{ alignSelf: 'center' }}>Nova Mesa</Text>
-            <View style={{flexDirection: 'column'}}>
+          <DialogContent style={{ flex: 1, flexDirection: 'column', justifyContent: 'space-evenly' }}>
+            <Text
+              style={{
+                color: '#424040',
+                fontSize: 25,
+                fontWeight: 'bold',
+                marginRight: 10
+              }}>
+              Nova Mesa
+            </Text>
+            <View style={{ flexDirection: 'column' }}>
               <TextInput
                 style={{ backgroundColor: "#fff" }}
                 label='Nome'
@@ -226,15 +249,15 @@ export default class MesasScreen extends Component {
               >
 
               </TextInput>
-              <Text style={{ fontSize: 15, alignSelf: 'flex-end', color:'#424040', marginHorizontal:5 }}>{this.state.nomeNovo.length + "/15"}</Text>
+              <Text style={{ fontSize: 15, alignSelf: 'flex-end', color: '#424040', marginHorizontal: 5 }}>{this.state.nomeNovo.length + "/15"}</Text>
             </View>
             <TextInput
-              style={{ backgroundColor: "#fff" }}f
+              style={{ backgroundColor: "#fff" }} f
               label='Descrição'
               value={this.state.descricaoNovo}
               onChangeText={text => this.setState({ descricaoNovo: text })}
             />
-          </View>
+          </DialogContent>
           <DialogFooter >
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
@@ -262,7 +285,7 @@ export default class MesasScreen extends Component {
           style={styles.fab}
           icon="add"
           color="#fff"
-          label="Nova"
+          label="Nova Mesa"
           onPress={() => this.setState({ dialogNovaMesa: true })}
         />
       </View>

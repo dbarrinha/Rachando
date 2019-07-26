@@ -35,7 +35,7 @@ export default class HomeScreen extends Component {
       visible: false,
       visibleDetails: false,
       nome: '',
-      preco: 0,
+      preco: 1,
       nomeSuges: "",
       idSuges: 0,
       sugestaoDialog: false,
@@ -131,12 +131,13 @@ export default class HomeScreen extends Component {
   addItemMesa = (nome, preco) => {
     let lista = this.state.listaMesa
     let consumo = { nome, preco }
+    //testa se o nome e preço foram passados
     lista.push(consumo)
     this.setState({
       listaMesa: lista,
       visible: false,
       nome: "",
-      preco: 0,
+      preco: 1,
       slider: 0
     })
   }
@@ -162,7 +163,7 @@ export default class HomeScreen extends Component {
           }}>
 
           <TouchableRipple onPress={() => this.props.navigation.navigate('Mesas')} style={{ padding: 10, flexDirection: 'column', justifyContent: 'center' }}>
-            <Icon size={30} color="#424040" name={Platform.OS === 'ios' ? "ios-close" : "md-arrow-round-back"} />
+            <Icon size={30} color="#424040" name={Platform.OS === 'ios' ? "ios-arrow-dropleft" : "md-arrow-round-back"} />
           </TouchableRipple>
           <Text
             style={{
@@ -200,7 +201,7 @@ export default class HomeScreen extends Component {
 
         <Divider />
 
-        <Text style={{ marginHorizontal: 10, color: '#474747' }}>Itens</Text>
+        <Text style={{ marginHorizontal: 10, color: '#474747' }}>Itens da Mesa</Text>
         <FlatList
           data={this.state.listaMesa}
           renderItem={item => this._renderMesa(item)}
@@ -212,8 +213,16 @@ export default class HomeScreen extends Component {
           height={0.5}
           onHardwareBackPress={() => { this.setState({ visible: false }) }}
           dialogAnimation={new ScaleAnimation()}>
-          <DialogContent style={{ flex: 1, justifyContent: 'space-around' }}>
-            <Text style={{ marginHorizontal: 10, fontSize: 25 }} ></Text>
+          <DialogContent style={{ flex: 1, justifyContent: 'space-evenly' }}>
+            <Text
+              style={{
+                color: '#424040',
+                fontSize: 25,
+                fontWeight: 'bold',
+                marginRight: 10
+              }}>
+              Novo Consumo
+            </Text>
             <TextInput
               style={styles.input}
               label='Nome'
@@ -312,7 +321,7 @@ export default class HomeScreen extends Component {
           icon="add"
           color="#fff"
           label="Novo Consumo"
-          onPress={() => this.setState({ dialogNovoUsuario: true })}
+          onPress={() => this.setState({ visible: true })}
         />
 
       </View>
