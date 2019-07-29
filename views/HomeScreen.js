@@ -17,7 +17,7 @@ import Slider from 'react-native-simple-slider'
 import AsyncStorage from '@react-native-community/async-storage';
 import { TextInputMask } from 'react-native-masked-text'
 //DB
-import Users from '../dao/Users'
+import { db } from '../dao/database';
 const numeral = require('numeral');
 const { height, width } = Dimensions.get('window');
 export default class HomeScreen extends Component {
@@ -30,22 +30,29 @@ export default class HomeScreen extends Component {
     super(props);
     this.state = {
       listaSuges: [],
-      listaMesa: [],
+      listaMesa: [
+        {
+          id: 1, id_mesa: 1, quantidade: 2, preco: 7.5, nome: 'Sushi'
+        }
+      ],
       itemAux: '',
       visible: false,
       visibleDetails: false,
       nome: '',
       preco: 1,
+      idEdita: 0,
       nomeSuges: "",
       idSuges: 0,
       sugestaoDialog: false,
       slider: 0,
-      mesa: {}
+      mesa: {},
+      userAux: [],
+      usuarios: []
     }
   }
 
   componentDidMount = async () => {
-    
+
     const { navigation } = this.props;
     let mesa = navigation.dangerouslyGetParent().dangerouslyGetParent().getParam('mesa')
     await AsyncStorage.setItem('mesaativa', JSON.stringify(mesa))
@@ -53,6 +60,22 @@ export default class HomeScreen extends Component {
       mesa
     })
     this.getSugestoes()
+    this.getConsumo()
+    this.getUsers()
+  }
+
+  getUsers = () => {
+    let temp = []
+    db.transaction(async tx => {
+      await tx.executeSql('SELECT * FROM user', [], (tx, results) => {
+        for (let i = 0; i < results.rows.length; ++i) {
+          temp.push(results.rows.item(i));
+        }
+        this.setState({
+          usuarios: temp
+        })
+      });
+    });
   }
 
   getSugestoes = async () => {
@@ -102,7 +125,8 @@ export default class HomeScreen extends Component {
             <View style={{ alignItems: 'flex-start', margin: 10 }}>
               <Text style={{ fontSize: 25 }}>{item.item.nome}</Text>
               <Text style={{ color: '#474747' }}>{item.item.preco}</Text>
-              <Text style={{ color: '#474747' }}>0000</Text>
+              <Text style={{ color: '#474747' }}>{item.item.quantidade}</Text>
+              <Text style={{ color: '#474747' }}>{item.item.quantidade * item.item.preco}</Text>
             </View>
             <Button onPress={() => console.log("teste")} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2 }}>
               <Icon style={{ fontSize: 40 }} color="#000000" name={Platform.OS === 'ios' ? "ios-add" : "md-add"} />
@@ -130,17 +154,79 @@ export default class HomeScreen extends Component {
     );
   }
 
-  addItemMesa = (nome, preco) => {
-    let lista = this.state.listaMesa
-    let consumo = { nome, preco }
+  getConsumo = () => {
+    var temp = [];
+    db.transaction(async tx => {
+      await tx.executeSql('SELECT * FROM consumo', [], (tx, results) => {
+        for (let i = 0; i < results.rows.length; ++i) {
+          temp.push(results.rows.item(i));
+        }
+        this.setState({
+          listaMesa: temp,
+        })
+      });
+    });
+  }
+
+  deleteConsumo = () => {
+    let id = this.state.idEdita
+    db.transaction(tx => {
+      tx.executeSql(
+        'DELETE FROM  consumo where id=?',
+        [id],
+        (tx, results) => {
+          if (results.rowsAffected > 0) {
+            this.getConsumo()
+            this.setState({ idEdita: "" })
+            console.warn('conusmo deletado');
+          } else {
+            console.warn('delete Failed');
+          }
+        }
+      );
+    });
+  }
+
+  addItemMesa = async (nome, preco) => {
+    let usuarios = this.state.userAux
     //testa se o nome e preço foram passados
-    lista.push(consumo)
+    db.transaction(async (tx) => {
+      tx.executeSql(
+        'INSERT INTO consumo VALUES (?,?,?,?,?)',
+        [null, this.state.mesa.id, 1, preco, nome],
+        (tx, results) => {
+          let idConsumo = results.insertId
+          console.log(results)
+          if (results.rowsAffected > 0) {
+            for (let i = 0; i < usuarios.length; i++) {
+              tx.executeSql(
+                'INSERT INTO usuarioconsumo VALUES (?,?,?)',
+                [null, idConsumo, usuarios[i].id],
+                (tx, results) => {
+                  if (results.rowsAffected > 0) {
+                    console.log(usuarios[i].nome)
+                  } else {
+                    console.warn('Registration Failed');
+                  }
+                }
+              );
+            }
+            this.setState({
+              visible: false,
+              nome: "",
+              preco: 1
+            })
+            this.getConsumo()
+          } else {
+            console.warn('Registration Failed');
+          }
+        }
+      );
+    });
     this.setState({
-      listaMesa: lista,
       visible: false,
       nome: "",
       preco: 1,
-      slider: 0
     })
   }
 

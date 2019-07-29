@@ -184,7 +184,6 @@ export default class MesasScreen extends Component {
   }
 
   render() {
-    console.log("render")
     return (
       <View style={{ flex: 1, backgroundColor: '#f3f0fa' }} >
         <StatusBar backgroundColor="#f3f0fa" barStyle="dark-content" />
