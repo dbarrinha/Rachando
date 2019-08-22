@@ -12,7 +12,7 @@ import { Divider, Card, TextInput, TouchableRipple, Chip, Button, FAB } from 're
 import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons'
 import Dialog, { DialogFooter, DialogButton, DialogContent, ScaleAnimation } from 'react-native-popup-dialog';
-//import TextInputMask from 'react-native-text-input-mask';
+import MultiSelect from 'react-native-multiple-select';
 import Slider from 'react-native-simple-slider'
 import AsyncStorage from '@react-native-community/async-storage';
 import { TextInputMask } from 'react-native-masked-text'
@@ -30,11 +30,7 @@ export default class HomeScreen extends Component {
     super(props);
     this.state = {
       listaSuges: [],
-      listaMesa: [
-        {
-          id: 1, id_mesa: 1, quantidade: 2, preco: 7.5, nome: 'Sushi'
-        }
-      ],
+      listaMesa: [],
       itemAux: '',
       visible: false,
       visibleDetails: false,
@@ -52,7 +48,7 @@ export default class HomeScreen extends Component {
   }
 
   componentDidMount = async () => {
-
+    
     const { navigation } = this.props;
     let mesa = navigation.dangerouslyGetParent().dangerouslyGetParent().getParam('mesa')
     await AsyncStorage.setItem('mesaativa', JSON.stringify(mesa))
@@ -62,6 +58,17 @@ export default class HomeScreen extends Component {
     this.getSugestoes()
     this.getConsumo()
     this.getUsers()
+  }
+
+  componentWillMount = async () => {
+    const didBlurSubscription = this.props.navigation.addListener(
+      'willFocus',
+      async payload => {
+
+        this.getAlertas()
+
+      }
+    );
   }
 
   getUsers = () => {
@@ -75,6 +82,35 @@ export default class HomeScreen extends Component {
           usuarios: temp
         })
       });
+    });
+  }
+
+  getConsumo = () => {
+    var temp = [];
+    db.transaction(async tx => {
+      await tx.executeSql('SELECT * FROM consumo', [], async (tx, results) => {
+        for (let i = 0; i < results.rows.length; ++i) {
+          let consumo = results.rows.item(i)
+          let userAux = []
+          await tx.executeSql(
+            'SELECT u.* FROM usuarioconsumo uc  ' +
+            ' inner join user u on u.id = uc.id_usuario '+
+            ' where uc.id_consumo = '+consumo.id
+          , [], (tx, results) => {
+            for (let i = 0; i < results.rows.length; ++i) {
+              let usuario = results.rows.item(i)
+              userAux.push(usuario);
+            }
+            consumo["users"] = userAux
+          });
+          temp.push(consumo);
+        }
+        this.setState({
+          listaMesa: temp,
+        })
+      });
+
+
     });
   }
 
@@ -118,15 +154,16 @@ export default class HomeScreen extends Component {
   }
 
   _renderMesa = (item) => {
+    let consumo = item.item
     return (
       <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 6, backgroundColor: 'white', borderRadius: 8 }}>
         <TouchableRipple onPress={() => console.log("detalhes")}>
           <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <View style={{ alignItems: 'flex-start', margin: 10 }}>
-              <Text style={{ fontSize: 25 }}>{item.item.nome}</Text>
-              <Text style={{ color: '#474747' }}>{item.item.preco}</Text>
-              <Text style={{ color: '#474747' }}>{item.item.quantidade}</Text>
-              <Text style={{ color: '#474747' }}>{item.item.quantidade * item.item.preco}</Text>
+              <Text style={{ fontSize: 25 }}>{consumo.nome}</Text>
+              <Text style={{ color: '#474747' }}>{consumo.preco}</Text>
+              <Text style={{ color: '#474747' }}>{consumo.quantidade}</Text>
+              <Text style={{ color: '#474747' }}>{consumo.quantidade * consumo.preco}</Text>
             </View>
             <Button onPress={() => console.log("teste")} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2 }}>
               <Icon style={{ fontSize: 40 }} color="#000000" name={Platform.OS === 'ios' ? "ios-add" : "md-add"} />
@@ -135,12 +172,15 @@ export default class HomeScreen extends Component {
         </TouchableRipple>
         <Divider />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-          <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>Danilo barrinha</Text></Chip>
-          <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>Giberson</Text></Chip>
-          <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>Renato</Text></Chip>
-          <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>Fulano</Text></Chip>
-          <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>Cicrano</Text></Chip>
-          <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>Beltrano</Text></Chip>
+          <FlatList 
+            
+            numColumns={3}
+            renderItem={(user) => {
+              return <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>{user.item.nome}</Text></Chip>
+            }}
+            ListEmptyComponent={() => <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>...</Text></Chip>}
+            data={consumo.users}
+          />
         </View>
       </View>
     );
@@ -154,19 +194,7 @@ export default class HomeScreen extends Component {
     );
   }
 
-  getConsumo = () => {
-    var temp = [];
-    db.transaction(async tx => {
-      await tx.executeSql('SELECT * FROM consumo', [], (tx, results) => {
-        for (let i = 0; i < results.rows.length; ++i) {
-          temp.push(results.rows.item(i));
-        }
-        this.setState({
-          listaMesa: temp,
-        })
-      });
-    });
-  }
+  
 
   deleteConsumo = () => {
     let id = this.state.idEdita
@@ -188,7 +216,7 @@ export default class HomeScreen extends Component {
   }
 
   addItemMesa = async (nome, preco) => {
-    let usuarios = this.state.userAux
+    const usuarios = this.state.userAux
     //testa se o nome e preço foram passados
     db.transaction(async (tx) => {
       tx.executeSql(
@@ -201,12 +229,10 @@ export default class HomeScreen extends Component {
             for (let i = 0; i < usuarios.length; i++) {
               tx.executeSql(
                 'INSERT INTO usuarioconsumo VALUES (?,?,?)',
-                [null, idConsumo, usuarios[i].id],
+                [null, idConsumo, usuarios[i]],
                 (tx, results) => {
                   if (results.rowsAffected > 0) {
-                    console.log(usuarios[i].nome)
                   } else {
-                    console.warn('Registration Failed');
                   }
                 }
               );
@@ -214,7 +240,8 @@ export default class HomeScreen extends Component {
             this.setState({
               visible: false,
               nome: "",
-              preco: 1
+              preco: 1,
+              userAux: []
             })
             this.getConsumo()
           } else {
@@ -238,6 +265,10 @@ export default class HomeScreen extends Component {
       slider: 0
     })
   }
+
+  onSelectedItemsChange = userAux => {
+    this.setState({ userAux });
+  };
 
   render() {
     return (
@@ -339,7 +370,6 @@ export default class HomeScreen extends Component {
                   }}
                   value={this.state.preco}
                   onChangeText={text => {
-                    console.log(numeral(text))
                     this.setState({
                       preco: numeral(text).value(),
                       slider: numeral(text).value()
@@ -357,12 +387,33 @@ export default class HomeScreen extends Component {
               step={0.5}
               maximumValue={30}
             />
-
+            <MultiSelect
+              hideTags
+              items={this.state.usuarios}
+              uniqueKey="id"
+              ref={(component) => { this.multiSelect = component }}
+              onSelectedItemsChange={this.onSelectedItemsChange}
+              selectedItems={this.state.userAux}
+              selectText="Selecione os Usuários"
+              searchInputPlaceholderText="Procurar Usuários..."
+              onChangeInput={(text) => console.log(text)}
+              altFontFamily="ProximaNova-Light"
+              tagRemoveIconColor="#CCC"
+              tagBorderColor="#CCC"
+              tagTextColor="#CCC"
+              selectedItemTextColor="#CCC"
+              selectedItemIconColor="#CCC"
+              itemTextColor="#000"
+              displayKey="nome"
+              searchInputStyle={{ color: '#CCC' }}
+              submitButtonColor="#CCC"
+              submitButtonText="Confirma"
+            />
           </DialogContent>
           <DialogFooter>
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
-              onPress={() => { this.setState({ visible: false, nome: "", preco: 0 }) }}
+              onPress={() => { this.setState({ visible: false, nome: "", preco: 0, userAux: [] }) }}
             />
             <DialogButton
               text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
