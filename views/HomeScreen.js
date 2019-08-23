@@ -43,12 +43,15 @@ export default class HomeScreen extends Component {
       slider: 0,
       mesa: {},
       userAux: [],
-      usuarios: []
+      usuarios: [],
+      idUpdate: null,
+      idDelete: null,
+      idDeleteUserconsumo: null
     }
   }
 
   componentDidMount = async () => {
-    
+
     const { navigation } = this.props;
     let mesa = navigation.dangerouslyGetParent().dangerouslyGetParent().getParam('mesa')
     await AsyncStorage.setItem('mesaativa', JSON.stringify(mesa))
@@ -58,6 +61,52 @@ export default class HomeScreen extends Component {
     this.getSugestoes()
     this.getConsumo()
     this.getUsers()
+  }
+
+
+  clearDados = () => {
+    this.setState({
+      userAux: [],
+      idUpdate: null,
+      idDelete: null,
+      idDeleteUserconsumo: null,
+      nome: '',
+      preco: 1,
+      idEdita: 0,
+      nomeSuges: "",
+      idSuges: 0,
+    })
+  }
+
+  iniciaUpdate = (item) => {
+
+  }
+
+  deleteConsumo = () => {
+    let { idDelete } = this.state
+    if (!idDelete) return;
+    db.transaction(async tx => {
+      await tx.executeSql('delete FROM consumo where id=' + idDelete, [], async (tx, results) => {
+        if (results.rowsAffected > 0) {
+          this.getConsumo()
+          this.setState({ idDelete: null,dialogConfirm: false })
+          console.warn('conusmo deletado');
+        } else {
+          console.warn('delete Failed');
+        }
+        
+      });
+    });
+  }
+
+  deleteUserConsumo = () => {
+    let { idDeleteUserconsumo } = this.state
+    if (!idDeleteUserconsumo) return;
+    db.transaction(async tx => {
+      await tx.executeSql('delete FROM usuarioconsumo where id=' + idDeleteUserconsumo, [], async (tx, results) => {
+
+      });
+    });
   }
 
   componentWillMount = async () => {
@@ -94,15 +143,15 @@ export default class HomeScreen extends Component {
           let userAux = []
           await tx.executeSql(
             'SELECT u.* FROM usuarioconsumo uc  ' +
-            ' inner join user u on u.id = uc.id_usuario '+
-            ' where uc.id_consumo = '+consumo.id
-          , [], (tx, results) => {
-            for (let i = 0; i < results.rows.length; ++i) {
-              let usuario = results.rows.item(i)
-              userAux.push(usuario);
-            }
-            consumo["users"] = userAux
-          });
+            ' inner join user u on u.id = uc.id_usuario ' +
+            ' where uc.id_consumo = ' + consumo.id
+            , [], (tx, results) => {
+              for (let i = 0; i < results.rows.length; ++i) {
+                let usuario = results.rows.item(i)
+                userAux.push(usuario);
+              }
+              consumo["users"] = userAux
+            });
           temp.push(consumo);
         }
         this.setState({
@@ -159,6 +208,9 @@ export default class HomeScreen extends Component {
       <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 6, backgroundColor: 'white', borderRadius: 8 }}>
         <TouchableRipple onPress={() => console.log("detalhes")}>
           <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <TouchableRipple style={{ right: ((width * 0.43) / 2), position: 'absolute', width: 40, height: 40, alignItems: 'center' }} onPress={() => { this.setState({ dialogConfirm: true, idDelete: consumo.id }) }}>
+              <Icon size={20} style={{ padding: 5 }} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
+            </TouchableRipple>
             <View style={{ alignItems: 'flex-start', margin: 10 }}>
               <Text style={{ fontSize: 25 }}>{consumo.nome}</Text>
               <Text style={{ color: '#474747' }}>{consumo.preco}</Text>
@@ -172,8 +224,8 @@ export default class HomeScreen extends Component {
         </TouchableRipple>
         <Divider />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-          <FlatList 
-            
+          <FlatList
+
             numColumns={3}
             renderItem={(user) => {
               return <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>{user.item.nome}</Text></Chip>
@@ -194,26 +246,9 @@ export default class HomeScreen extends Component {
     );
   }
 
-  
 
-  deleteConsumo = () => {
-    let id = this.state.idEdita
-    db.transaction(tx => {
-      tx.executeSql(
-        'DELETE FROM  consumo where id=?',
-        [id],
-        (tx, results) => {
-          if (results.rowsAffected > 0) {
-            this.getConsumo()
-            this.setState({ idEdita: "" })
-            console.warn('conusmo deletado');
-          } else {
-            console.warn('delete Failed');
-          }
-        }
-      );
-    });
-  }
+
+
 
   addItemMesa = async (nome, preco) => {
     const usuarios = this.state.userAux
