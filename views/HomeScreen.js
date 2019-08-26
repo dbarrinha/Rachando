@@ -55,22 +55,12 @@ export default class HomeScreen extends Component {
     const didBlurSubscription = this.props.navigation.addListener(
       'willFocus',
       async payload => {
-          this.getUsers()
+        this.getUsers()
       }
     );
   }
 
   componentDidMount = async () => {
-    let temp = []
-    await db.transaction(async tx => {
-      await tx.executeSql('SELECT * FROM usuarioconsumo', [], (tx, results) => {
-        for (let i = 0; i < results.rows.length; ++i) {
-          temp.push(results.rows.item(i));
-        }
-        console.log(temp)
-
-      });
-    });
 
     const { navigation } = this.props;
     let mesa = navigation.dangerouslyGetParent().dangerouslyGetParent().getParam('mesa')
@@ -681,6 +671,22 @@ export default class HomeScreen extends Component {
           onPress={() => this.setState({ visible: true })}
         />
 
+        <FAB
+          style={{
+            flex: 0,
+            position: 'absolute',
+            marginBottom: 26,
+            left: 10,
+            bottom: 0,
+            alignSelf: 'center',
+            backgroundColor: "#e57",
+          }}
+          icon="monetization-on"
+          color="#fff"
+          label="Conta Parcial"
+          onPress={() => this.props.navigation.navigate("Conta",{dados: this.state.listaMesa})}
+        />
+
       </View>
     );
   }
@@ -697,6 +703,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     marginBottom: 26,
     bottom: 0,
+    right: 10,
     alignSelf: 'center',
     backgroundColor: "#2f95dc",
   },

@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import home from './views/HomeScreen'
 import users from './views/UsersScreen'
 import mesas from './views/MesasScreen'
+import ContaScreen from './views/ContaScreen'
 
 ///DB
 import { initDB } from './dao/InitDB'
@@ -55,6 +56,7 @@ class AuthLoadingScreen extends React.Component {
 
 const HomeStack = createStackNavigator({
   Home: home,
+  Conta: ContaScreen
 });
 HomeStack.navigationOptions = {
   tabBarLabel: "Mesa",
