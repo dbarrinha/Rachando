@@ -46,7 +46,7 @@ export const initDB = () => {
                     txn.executeSql(
                         'CREATE TABLE IF NOT EXISTS consumo(id INTEGER PRIMARY KEY AUTOINCREMENT,'+
                             'id_mesa INTEGER ,quantidade INTEGER,preço REAL, nome VARCHAR(30),' +
-                            'FOREIGN KEY(id_mesa) REFERENCES mesa(id))',
+                            'FOREIGN KEY(id_mesa) REFERENCES mesa(id) ON DELETE CASCADE)',
                         []
                     );
                 }
@@ -64,7 +64,7 @@ export const initDB = () => {
                     txn.executeSql('DROP TABLE IF EXISTS usuarioconsumo', []);
                     txn.executeSql(
                         'CREATE TABLE IF NOT EXISTS usuarioconsumo(id INTEGER PRIMARY KEY AUTOINCREMENT, id_consumo INTEGER, id_usuario INTEGER,'+
-                            'FOREIGN KEY(id_consumo) REFERENCES consumo(id), FOREIGN KEY(id_usuario) REFERENCES user(id))',
+                            'FOREIGN KEY(id_consumo) REFERENCES consumo(id) ON DELETE CASCADE, FOREIGN KEY(id_usuario) REFERENCES user(id) ON DELETE CASCADE) ',
                         []
                     );
                 }

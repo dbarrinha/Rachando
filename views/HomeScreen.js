@@ -40,17 +40,37 @@ export default class HomeScreen extends Component {
       nomeSuges: "",
       idSuges: 0,
       sugestaoDialog: false,
+      dialogConfirm: false,
       slider: 0,
       mesa: {},
       userAux: [],
       usuarios: [],
       idUpdate: null,
       idDelete: null,
-      idDeleteUserconsumo: null
+      idDeleteUserconsumo: null,
     }
   }
 
+  componentWillMount = async () => {
+    const didBlurSubscription = this.props.navigation.addListener(
+      'willFocus',
+      async payload => {
+          this.getUsers()
+      }
+    );
+  }
+
   componentDidMount = async () => {
+    let temp = []
+    await db.transaction(async tx => {
+      await tx.executeSql('SELECT * FROM usuarioconsumo', [], (tx, results) => {
+        for (let i = 0; i < results.rows.length; ++i) {
+          temp.push(results.rows.item(i));
+        }
+        console.log(temp)
+
+      });
+    });
 
     const { navigation } = this.props;
     let mesa = navigation.dangerouslyGetParent().dangerouslyGetParent().getParam('mesa')
@@ -64,22 +84,71 @@ export default class HomeScreen extends Component {
   }
 
 
-  clearDados = () => {
+  iniciaUpdate = (item) => {
     this.setState({
-      userAux: [],
-      idUpdate: null,
-      idDelete: null,
-      idDeleteUserconsumo: null,
-      nome: '',
-      preco: 1,
-      idEdita: 0,
-      nomeSuges: "",
-      idSuges: 0,
+      idUpdate: item.id,
+      idDelete: item.id,
+      nome: item.nome,
+      preco: item.preço,
+      slider: item.preço,
+      userAux: item.users,
+      visibleDetails: true
     })
   }
 
-  iniciaUpdate = (item) => {
+  incrementaConsumo = (id, quantidade) => {
+    db.transaction((tx) => {
+      tx.executeSql(
+        'UPDATE consumo set quantidade=? where id=?',
+        [++quantidade, id],
+        (tx, results) => {
+          if (results.rowsAffected > 0) {
+            console.warn("teste atualizado")
+            this.getConsumo()
+          } else {
+            console.warn('Registration Failed');
+          }
+        }
+      );
+    });
+  }
 
+  decrementaConsumo = (id, quantidade) => {
+    if (quantidade === 0) return;
+    db.transaction((tx) => {
+      tx.executeSql(
+        'UPDATE consumo set quantidade=? where id=?',
+        [--quantidade, id],
+        (tx, results) => {
+          if (results.rowsAffected > 0) {
+            console.warn("teste atualizado")
+            this.getConsumo()
+          } else {
+            console.warn('Registration Failed');
+          }
+        }
+      );
+    });
+  }
+
+  updateConsumo = () => {
+    let { idUpdate, nome, preco } = this.state
+    if (!idUpdate) return;
+    db.transaction((tx) => {
+      tx.executeSql(
+        'UPDATE consumo set nome=?, preço=? where id=?',
+        [nome, preco, idUpdate],
+        (tx, results) => {
+          if (results.rowsAffected > 0) {
+            console.warn("teste atualizado")
+            this.clearDilaog()
+            this.getConsumo()
+          } else {
+            console.warn('Registration Failed');
+          }
+        }
+      );
+    });
   }
 
   deleteConsumo = () => {
@@ -89,12 +158,12 @@ export default class HomeScreen extends Component {
       await tx.executeSql('delete FROM consumo where id=' + idDelete, [], async (tx, results) => {
         if (results.rowsAffected > 0) {
           this.getConsumo()
-          this.setState({ idDelete: null,dialogConfirm: false })
+          this.setState({ idDelete: null, dialogConfirm: false })
           console.warn('conusmo deletado');
         } else {
           console.warn('delete Failed');
         }
-        
+
       });
     });
   }
@@ -104,25 +173,13 @@ export default class HomeScreen extends Component {
     if (!idDeleteUserconsumo) return;
     db.transaction(async tx => {
       await tx.executeSql('delete FROM usuarioconsumo where id=' + idDeleteUserconsumo, [], async (tx, results) => {
-
       });
     });
   }
 
-  componentWillMount = async () => {
-    const didBlurSubscription = this.props.navigation.addListener(
-      'willFocus',
-      async payload => {
-
-        this.getAlertas()
-
-      }
-    );
-  }
-
-  getUsers = () => {
+  getUsers = async () => {
     let temp = []
-    db.transaction(async tx => {
+    await db.transaction(async tx => {
       await tx.executeSql('SELECT * FROM user', [], (tx, results) => {
         for (let i = 0; i < results.rows.length; ++i) {
           temp.push(results.rows.item(i));
@@ -135,12 +192,14 @@ export default class HomeScreen extends Component {
   }
 
   getConsumo = () => {
-    var temp = [];
+    let { mesa } = this.state
+    const temp = [];
     db.transaction(async tx => {
-      await tx.executeSql('SELECT * FROM consumo', [], async (tx, results) => {
+      await tx.executeSql('SELECT * FROM consumo where id_mesa =' + mesa.id, [], async (tx, results) => {
         for (let i = 0; i < results.rows.length; ++i) {
           let consumo = results.rows.item(i)
           let userAux = []
+          consumo["users"] = []
           await tx.executeSql(
             'SELECT u.* FROM usuarioconsumo uc  ' +
             ' inner join user u on u.id = uc.id_usuario ' +
@@ -154,9 +213,11 @@ export default class HomeScreen extends Component {
             });
           temp.push(consumo);
         }
-        this.setState({
-          listaMesa: temp,
-        })
+        setTimeout(() => {
+          this.setState({
+            listaMesa: temp,
+          })
+        }, 300)
       });
 
 
@@ -188,7 +249,6 @@ export default class HomeScreen extends Component {
     await AsyncStorage.setItem('sugestoes', JSON.stringify(lista))
   }
 
-
   _renderSugestoes = (item) => {
     return (
       <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 8, backgroundColor: 'white', borderRadius: 10 }}>
@@ -206,33 +266,32 @@ export default class HomeScreen extends Component {
     let consumo = item.item
     return (
       <View style={{ marginHorizontal: 10, marginVertical: 10, elevation: 6, backgroundColor: 'white', borderRadius: 8 }}>
-        <TouchableRipple onPress={() => console.log("detalhes")}>
+        <TouchableRipple onPress={() => this.iniciaUpdate(consumo)}>
           <Card.Content style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <TouchableRipple style={{ right: ((width * 0.43) / 2), position: 'absolute', width: 40, height: 40, alignItems: 'center' }} onPress={() => { this.setState({ dialogConfirm: true, idDelete: consumo.id }) }}>
-              <Icon size={20} style={{ padding: 5 }} color="black" name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />
-            </TouchableRipple>
             <View style={{ alignItems: 'flex-start', margin: 10 }}>
               <Text style={{ fontSize: 25 }}>{consumo.nome}</Text>
-              <Text style={{ color: '#474747' }}>{consumo.preco}</Text>
-              <Text style={{ color: '#474747' }}>{consumo.quantidade}</Text>
-              <Text style={{ color: '#474747' }}>{consumo.quantidade * consumo.preco}</Text>
+              <Text style={{ color: '#474747' }}>Preço: {consumo.preço}</Text>
+              <Text style={{ color: '#474747' }}>Quantidade: {consumo.quantidade}</Text>
+              <Text style={{ color: '#474747' }}>Total a pagar: {consumo.quantidade * consumo.preço}</Text>
             </View>
-            <Button onPress={() => console.log("teste")} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2 }}>
-              <Icon style={{ fontSize: 40 }} color="#000000" name={Platform.OS === 'ios' ? "ios-add" : "md-add"} />
-            </Button>
+            <View>
+
+              <Button onPress={() => this.incrementaConsumo(consumo.id, consumo.quantidade)} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2 }}>
+                <Icon style={{ fontSize: 40 }} color="#000000" name={Platform.OS === 'ios' ? "ios-add" : "md-add"} />
+              </Button>
+              <Button onPress={() => this.decrementaConsumo(consumo.id, consumo.quantidade)} style={{ justifyContent: 'center', alignItems: 'center', flexDirection: 'column', width: width * 0.2 }}>
+                <Icon style={{ fontSize: 40 }} color="red" name={Platform.OS === 'ios' ? "ios-remove" : "md-remove"} />
+              </Button>
+            </View>
           </Card.Content>
         </TouchableRipple>
         <Divider />
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start' }}>
-          <FlatList
+          {
+            consumo.users.map(user => {
+              return <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>{user.nome}</Text></Chip>
+            })}
 
-            numColumns={3}
-            renderItem={(user) => {
-              return <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>{user.item.nome}</Text></Chip>
-            }}
-            ListEmptyComponent={() => <Chip style={{ margin: 5 }}><Text style={{ fontSize: 12 }}>...</Text></Chip>}
-            data={consumo.users}
-          />
         </View>
       </View>
     );
@@ -246,12 +305,12 @@ export default class HomeScreen extends Component {
     );
   }
 
-
-
-
-
   addItemMesa = async (nome, preco) => {
     const usuarios = this.state.userAux
+    if (usuarios.length === 0) {
+
+      return;
+    }
     //testa se o nome e preço foram passados
     db.transaction(async (tx) => {
       tx.executeSql(
@@ -259,7 +318,6 @@ export default class HomeScreen extends Component {
         [null, this.state.mesa.id, 1, preco, nome],
         (tx, results) => {
           let idConsumo = results.insertId
-          console.log(results)
           if (results.rowsAffected > 0) {
             for (let i = 0; i < usuarios.length; i++) {
               tx.executeSql(
@@ -295,9 +353,12 @@ export default class HomeScreen extends Component {
   clearDilaog = () => {
     this.setState({
       visible: false,
+      visibleDetails: false,
       nome: "",
       preco: 0,
-      slider: 0
+      slider: 0,
+      idUpdate: null,
+      idDelete: null
     })
   }
 
@@ -486,6 +547,128 @@ export default class HomeScreen extends Component {
               onPress={() => {
                 this.editaSugestao(this.state.nomeSuges, this.state.idSuges)
                 this.setState({ sugestaoDialog: false, nomeSuges: "", idSuges: 0 })
+              }}
+            />
+          </DialogFooter>
+        </Dialog>
+
+        <Dialog
+          visible={this.state.dialogConfirm}
+          width={0.8}
+          height={0.3}
+          onHardwareBackPress={() => { this.setState({ dialogConfirm: false }) }}
+          dialogAnimation={new ScaleAnimation()}>
+          <DialogContent style={{ flex: 1, justifyContent: 'space-around' }}>
+            <Text>Confirma a Excluxão?</Text>
+
+          </DialogContent>
+          <DialogFooter>
+            <DialogButton
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
+              onPress={() => { this.setState({ dialogConfirm: false }) }}
+            />
+            <DialogButton
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
+              onPress={() => {
+                this.deleteConsumo()
+                this.setState({ dialogConfirm: false }, () => {
+                  this.clearDilaog()
+                })
+              }}
+            />
+          </DialogFooter>
+        </Dialog>
+        <Dialog
+          visible={this.state.visibleDetails}
+          width={0.9}
+          height={0.5}
+          onHardwareBackPress={() => {
+            this.setState({ visibleDetails: false })
+            this.clearDilaog()
+
+          }}
+          dialogAnimation={new ScaleAnimation()}>
+          <DialogContent style={{ flex: 1, justifyContent: 'space-evenly' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+
+              <Text
+                style={{
+                  color: '#424040',
+                  fontSize: 25,
+                  fontWeight: 'bold',
+                  marginRight: 10
+                }}>
+                Editar Consumo
+            </Text>
+
+              <Button color="red" onPress={() => {
+                this.setState({
+                  dialogConfirm: true
+                })
+              }}>
+                <Text color="white">DELETAR</Text>
+              </Button>
+            </View>
+            <TextInput
+              style={styles.input}
+              label='Nome'
+              selectionColor='#f3f0fa'
+              underlineColor='#f3f0fa'
+              value={this.state.nome}
+              onChangeText={text => this.setState({ nome: text })}
+            />
+
+            <TextInput
+              style={styles.input}
+              selectionColor='#f3f0fa'
+              underlineColor='#f3f0fa'
+              keyboardType="numeric"
+              render={props =>
+                <TextInputMask
+                  {...props}
+                  type={'money'}
+                  ref={(ref) => this.moneyField = ref}
+                  options={{
+                    precision: 2,
+                    separator: '.',
+                    delimiter: ',',
+                    unit: 'R$',
+                    suffixUnit: ''
+                  }}
+                  value={this.state.preco}
+                  onChangeText={text => {
+                    this.setState({
+                      preco: numeral(text).value(),
+                      slider: numeral(text).value()
+                    })
+                  }}
+                />
+              }
+            />
+
+
+            <Slider
+              sliderWidth={width * 0.8}
+              value={this.state.preco > 30 ? 30 : this.state.preco}
+              onValueChange={preco => this.setState({ preco: numeral(preco).value(), slider: numeral(preco).value() })}
+              step={0.5}
+              maximumValue={30}
+            />
+
+            <Text>Listar os usuarios atuais para poder excluir</Text>
+          </DialogContent>
+          <DialogFooter>
+            <DialogButton
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-close" : "md-close"} />}
+              onPress={() => {
+                this.clearDilaog()
+              }}
+            />
+            <DialogButton
+              text={<Icon size={30} name={Platform.OS === 'ios' ? "ios-checkmark" : "md-checkmark"} />}
+              onPress={() => {
+                this.updateConsumo()
+                //chama função de update
               }}
             />
           </DialogFooter>
