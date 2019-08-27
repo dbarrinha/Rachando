@@ -56,7 +56,7 @@ class AuthLoadingScreen extends React.Component {
 
 const HomeStack = createStackNavigator({
   Home: home,
-  Conta: ContaScreen
+  Conta: ContaScreen,
 });
 HomeStack.navigationOptions = {
   tabBarLabel: "Mesa",

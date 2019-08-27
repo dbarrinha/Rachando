@@ -671,21 +671,23 @@ export default class HomeScreen extends Component {
           onPress={() => this.setState({ visible: true })}
         />
 
-        <FAB
-          style={{
-            flex: 0,
-            position: 'absolute',
-            marginBottom: 26,
-            left: 10,
-            bottom: 0,
-            alignSelf: 'center',
-            backgroundColor: "#e57",
-          }}
-          icon="monetization-on"
-          color="#fff"
-          label="Conta Parcial"
-          onPress={() => this.props.navigation.navigate("Conta",{dados: this.state.listaMesa})}
-        />
+        {this.state.listaMesa.length > 0 && (
+          <FAB
+            style={{
+              flex: 0,
+              position: 'absolute',
+              marginBottom: 26,
+              left: 10,
+              bottom: 0,
+              alignSelf: 'center',
+              backgroundColor: "#e57",
+            }}
+            icon="monetization-on"
+            color="#fff"
+            label="Conta Parcial"
+            onPress={() => this.props.navigation.navigate("Conta", { dados: this.state.listaMesa, mesa: this.state.mesa.nome })}
+          />
+        )}
 
       </View>
     );
