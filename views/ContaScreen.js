@@ -90,12 +90,13 @@ export default class ContaScreen extends Component {
 
   goShare = () => {
     let { conta, total, mesa } = this.state
+    console.log(conta)
     let msg = ""
     msg += "Rolê " + mesa + "\n\n"
     for (let i = 0; i < conta.length; i++) {
       msg += "" + conta[i].nome + "\n"
-      for (let j = 0; j < conta.itens.length; j++) {
-        msg += "" + conta.itens[i].nome + " total: R$" + this.formataValor(conta.itens[i].value) + "\n"
+      for (let j = 0; j < conta[i].itens.length; j++) {
+        msg += "" + conta[i].itens[j].nome + " total: R$" + this.formataValor(conta[i].itens[j].value) + "\n"
       }
       msg += "Total: R$" +  (this.state.isGorjeta ? this.formataValor(conta[i].total * 1.1):this.formataValor(conta[i].total))+" "+(this.state.isGorjeta ? "(+10%)":"") + "\n\n"
     }
